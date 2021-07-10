@@ -1,0 +1,6 @@
+# workspace files
+/.vscode
+/.idea
+# secret keys
+.properties
+
