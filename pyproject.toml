@@ -7,6 +7,7 @@ authors = ["Dartt0n <antonkudryavtsevdoem@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 SQLAlchemy = "^1.4.20"
+requests = "^2.25.1"
 
 [tool.poetry.dev-dependencies]
 loguru = "^0.5.3"
