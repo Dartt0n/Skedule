@@ -1,1 +1,3 @@
 # Skedule
+
+Bot for students
