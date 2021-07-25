@@ -23,4 +23,18 @@
     mysql -h $DATABASE_HOST --user username --password database_name
     ```
 
+## Create tables and fill them
+### Create new table
+    ```mysql
+    CREATE TABLE lessons (
+      id INT NOT NULL AUTO_INCREMENT,
+      lesson_number TINYINT NOT NULL,
+      day_of_week TINYINT NOT NULL,
+      subject VARCHAR(100) NOT NULL,
+      teacher VARCHAR(50) NULL,
+      cabinet VARCHAR(20) NOT NULL,
+      class_group VARCHAR(4) NOT NULL,
+      PRIMARY KEY (id)
+    );
+    ```
 
