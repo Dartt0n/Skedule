@@ -10,7 +10,7 @@ Reference: https://mariadb.com/kb/en/installing-and-using-mariadb-via-docker/
     ```bash
     docker search mariadb
     ```
-    In this guide I will use an official release of mariadb - `mariadb` image, but you can choose for your wish.
+    In this guide I will use an official release of mariadb - "mariadb" image, but you can choose for your wish.
 4) Get image:
     ```bash
     docker pull mariadb
@@ -18,10 +18,10 @@ Reference: https://mariadb.com/kb/en/installing-and-using-mariadb-via-docker/
 ## Creating a container
 
 Create a Container with following command
-    
-    ```bash
-    docker run --name mariadbcontainer -e MYSQL_ROOT_PASSWORD=12345 -p 3306:3306 -d maria db
-    ```
+
+```bash
+docker run --name mariadbcontainer -e MYSQL_ROOT_PASSWORD=12345 -p 3306:3306 -d maria db
+```
     ! Use secure password instead of `12345`
 
 ## Automatic restart
