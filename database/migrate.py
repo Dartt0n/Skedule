@@ -17,10 +17,10 @@ def get_config(key: str) -> Any:
     return properties[key].data
 
 
-DB_USER_NAME = get_config("DB_USER")
-DB_DATABASE_NAME = get_config("DB_NAME")
-DB_USER_PASSWORD = get_config("DB_USER_PASSWORD")
-DB_DATABASE_HOST = "172.17.0.2"  # input("DB HOST: ")
+DB_USER_NAME = "root"
+DB_DATABASE_NAME = "skedule"
+DB_USER_PASSWORD = get_config("DB_ROOT_PASSWORD")
+DB_DATABASE_HOST = "skedule.com"
 
 # create engine for remote database
 mariadb = create_engine(
@@ -31,14 +31,14 @@ Base = declarative_base()
 
 
 class MDB_Lesson(Base):
-    __tablename__ = "lessons"
+    __tablename__ = "tt10_20_21"
     id = Column(Integer, nullable=False, primary_key=True)
     lesson_number = Column(SmallInteger, nullable=False)
     day_of_week = Column(SmallInteger, nullable=False)
     subject = Column(String(length=100), nullable=False)
-    teacher = Column(String(length=50), nullable=True)
-    cabinet = Column(String(length=20), nullable=False)
-    class_group = Column(String(length=4), nullable=False)
+    teacher = Column(String(length=100), nullable=True)
+    cabinet = Column(String(length=50), nullable=False)
+    semigroup = Column(String(length=15), nullable=False)
 
 
 mariadb_session = sessionmaker(bind=mariadb)()
@@ -69,7 +69,7 @@ for sqlite_lesson_row in all_sqlite_data:
         subject=sqlite_lesson_row.subject,
         teacher=sqlite_lesson_row.teacher,
         cabinet=sqlite_lesson_row.cabinet,
-        class_group=sqlite_lesson_row.class_group,
+        semigroup=sqlite_lesson_row.class_group,
     )
     mariadb_session.add(mariadb_lesson_row)
     mariadb_session.commit()
