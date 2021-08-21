@@ -67,14 +67,3 @@ class Agent:
             TableLesson(table_row.lesson_number, table_row.subject, table_row.teacher, table_row.cabinet)
             for table_row in all_daily_data
         ])
-
-
-# --=--
-
-a = Agent(
-    DatabaseConnection("telegram_user", "YywQZDSOcAaDl8OisL", "skedule.ru", "skedule")
-)
-
-user = User("10", "10е1")
-x = a.get_day(user, 1)
-print()
