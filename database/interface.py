@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.schema import Table
-from database.models import *
+from database.models import User, DatabaseConnection, TableLesson, TableDay
 
 # Format for table name. Parallel should be passed in format string
 TABLE_FORMAT = "tt{}_20_21".format
@@ -55,7 +55,7 @@ class Agent:
 
         return table_days
 
-    def get_day(self, user, day_of_week: int):
+    def get_day(self, user: User, day_of_week: int):
         """Returns daily schedule for certain class and day"""
         all_daily_data = (
             self.__session.query(self.__get_table(user))
