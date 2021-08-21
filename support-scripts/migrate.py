@@ -38,7 +38,7 @@ class MDB_Lesson(Base):
     subject = Column(String(length=100), nullable=False)
     teacher = Column(String(length=100), nullable=True)
     cabinet = Column(String(length=50), nullable=False)
-    semigroup = Column(String(length=15), nullable=False)
+    subclass = Column(String(length=15), nullable=False)
 
 
 mariadb_session = sessionmaker(bind=mariadb)()
@@ -69,7 +69,7 @@ for sqlite_lesson_row in all_sqlite_data:
         subject=sqlite_lesson_row.subject,
         teacher=sqlite_lesson_row.teacher,
         cabinet=sqlite_lesson_row.cabinet,
-        semigroup=sqlite_lesson_row.class_group,
+        subclass=sqlite_lesson_row.class_group,
     )
     mariadb_session.add(mariadb_lesson_row)
     mariadb_session.commit()

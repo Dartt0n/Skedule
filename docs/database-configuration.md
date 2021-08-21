@@ -33,7 +33,7 @@ CREATE TABLE lessons (
   subject VARCHAR(100) NOT NULL,
   teacher VARCHAR(50) NULL,
   cabinet VARCHAR(20) NOT NULL,
-  class_group VARCHAR(4) NOT NULL,
+  subclass VARCHAR(4) NOT NULL,
   PRIMARY KEY (id)
 );
 ```

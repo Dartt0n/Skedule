@@ -1,6 +1,7 @@
 from typing import List
 from dataclasses import dataclass
 
+
 @dataclass
 class DatabaseConnection:
     username: str
@@ -22,7 +23,8 @@ class TableDay:
     lessons: List[TableLesson]
     day_of_week: int
 
+
 @dataclass
 class User:
     parallel: str
-    semigroup: str
+    subclass: str

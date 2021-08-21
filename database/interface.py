@@ -28,11 +28,11 @@ class Agent:
         return self.__base.metadata.tables[TABLE_FORMAT(user.parallel)]
 
     def get_week(self, user: User):
-        """Returns weekly schedule for certain class (semigroup)
+        """Returns weekly schedule for certain class (subclass)
         """
         all_weekly_data = (
             self.__session.query(self.__get_table(user))
-            .filter_by(semigroup=user.semigroup) # database store only one week, so we need to filter only by semigroup
+            .filter_by(subclass=user.subclass) # database store only one week, so we need to filter only by subclass
             .all()
         )
 
@@ -59,7 +59,7 @@ class Agent:
         """Returns daily schedule for certain class and day"""
         all_daily_data = (
             self.__session.query(self.__get_table(user))
-            .filter_by(semigroup=user.semigroup, day_of_week=day_of_week) # filter by subclass and day_of_week
+            .filter_by(subclass=user.subclass, day_of_week=day_of_week) # filter by subclass and day_of_week
             .all()
         )
         # rebase data 
