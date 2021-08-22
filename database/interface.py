@@ -2,11 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.schema import Table
-from models import DatabaseRow, User, DatabaseConnection, TableLesson, TableDay, Student, Teacher
+from models import DatabaseRow, User, DatabaseConnection, TableLesson, TableDay
 from typing import List
-
-# Format for table name. Parallel should be passed in format string
-TABLE_FORMAT = "tt{}_20_21".format
 
 
 class Agent:
@@ -25,16 +22,16 @@ class Agent:
 
     def __get_table(self, user: User) -> Table:
         """Returns table, which can be received from metadata of database.
-        Table identified with TABLE_FORMAT format string for each parallel (8s, 9s, 10s, 11s)
+        Each user contain variable `table_name` generated in time user registered
         """
         return self.__base.metadata.tables[user.table_name]
 
     def get_week(self, user: User) -> List[TableDay]:
-        """Returns weekly schedule for certain class (subclass)"""
+        """Returns weekly schedule for certain subclass or teacher (defined by `user.filter`)
+        `user.filter` generated in time user registered
+        """
         all_weekly_data: List[DatabaseRow] = (
-            self.__session.query(self.__get_table(user))
-            .filter_by(**user.filter)
-            .all()
+            self.__session.query(self.__get_table(user)).filter_by(**user.filter).all()
         )
 
         # Create array for every day (indexed by 1-6, like Mon-Sat)
@@ -52,7 +49,9 @@ class Agent:
         return table_days
 
     def get_day(self, user: User, day_of_week: int) -> TableDay:
-        """Returns daily schedule for certain class and day"""
+        """Returns daily schedule for certain class or teacher on certain day
+        Uses `user.filter` for filtering database output
+        """
         all_daily_data: List[DatabaseRow] = (
             self.__session.query(self.__get_table(user))
             .filter_by(
@@ -71,7 +70,7 @@ class Agent:
     def get_lesson(
         self, user: User, day_of_week: int, lesson_number: int
     ) -> TableLesson:
-        """Returns lesson for certain class, day and lesson number"""
+        """Returns lesson schedule for certain class or teacher, on certain day in certain lesson"""
         table_row: DatabaseRow = (
             self.__session.query(self.__get_table(user))
             .filter_by(
@@ -84,9 +83,3 @@ class Agent:
         if not table_row:
             return None
         return TableLesson.from_database(table_row)
-
-a = Agent(
-    DatabaseConnection("telegram_user", "YywQZDSOcAaDl8OisL", "skedule.ru", "skedule")
-)
-
-user = User("10е1")
