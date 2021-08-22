@@ -38,5 +38,15 @@ class User:
     """
     Dataclass describing user
     """
-    parallel: str
+    subclass: str
+    parallel = property(fget = lambda self: self.subclass[:-2])
+
+
+class DatabaseRow:
+    id: int
+    lesson_number: int
+    day_of_week: int
+    subject: str
+    teacher: str
+    cabinet: str
     subclass: str
