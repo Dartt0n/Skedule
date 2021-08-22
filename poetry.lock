@@ -158,6 +158,14 @@ win32-setctime = {version = ">=1.0.0", markers = "sys_platform == \"win32\""}
 dev = ["codecov (>=2.0.15)", "colorama (>=0.3.4)", "flake8 (>=3.7.7)", "tox (>=3.9.0)", "tox-travis (>=0.12)", "pytest (>=4.6.2)", "pytest-cov (>=2.7.1)", "Sphinx (>=2.2.1)", "sphinx-autobuild (>=0.7.1)", "sphinx-rtd-theme (>=0.4.3)", "black (>=19.10b0)", "isort (>=5.1.1)"]
 
 [[package]]
+name = "mariadb"
+version = "1.0.7"
+description = "Python MariaDB extension"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
@@ -479,6 +487,17 @@ jproperties = [
 loguru = [
     {file = "loguru-0.5.3-py3-none-any.whl", hash = "sha256:f8087ac396b5ee5f67c963b495d615ebbceac2796379599820e324419d53667c"},
     {file = "loguru-0.5.3.tar.gz", hash = "sha256:b28e72ac7a98be3d28ad28570299a393dfcd32e5e3f6a353dec94675767b6319"},
+]
+mariadb = [
+    {file = "mariadb-1.0.7-cp36-cp36m-win32.whl", hash = "sha256:a9e752dbf2a77fdafacf07e15403df14d6bd6533a78ed6260cbaa26077e95c02"},
+    {file = "mariadb-1.0.7-cp36-cp36m-win_amd64.whl", hash = "sha256:05ea0125dc2e33793697179d3daa0b5383a24a15f23880d334d87aa4573c0e84"},
+    {file = "mariadb-1.0.7-cp37-cp37m-win32.whl", hash = "sha256:a9e13e04d77567b45765e97e1e5247e49e4d39dc0f8c5701095ab6ebf7322f06"},
+    {file = "mariadb-1.0.7-cp37-cp37m-win_amd64.whl", hash = "sha256:11c89e13e4630e7d2250a50ab4d8ec35c4ded5e08e8cb3013ed74ceb20693b32"},
+    {file = "mariadb-1.0.7-cp38-cp38-win32.whl", hash = "sha256:04f47298189414aa3fc28deaf8acc07b7b3233744cfa4f38adfa4995b5d89b7a"},
+    {file = "mariadb-1.0.7-cp38-cp38-win_amd64.whl", hash = "sha256:a41f75d8fc17f6722c19fda5e0e31e9c9d87aaa97b097cfa651f1af08a896364"},
+    {file = "mariadb-1.0.7-cp39-cp39-win32.whl", hash = "sha256:843dc6f314de61035e09109733fc2ca5dee5f8afdb16c387f000425bf2fd312c"},
+    {file = "mariadb-1.0.7-cp39-cp39-win_amd64.whl", hash = "sha256:5ea378f43c00925d40e47718349d36c8421405b34ff814b987d612406d8d02b5"},
+    {file = "mariadb-1.0.7.tar.gz", hash = "sha256:3c7eebcb94588b879069a00ae3894ef404f24ed350c40d633ccb98964bc1de55"},
 ]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
