@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.schema import Table
-from models import DatabaseRow, User, DatabaseConnection, TableLesson, TableDay
+from models import DatabaseRow, User, DatabaseConnection, TableLesson, TableDay, Student, Teacher
 from typing import List
 
 # Format for table name. Parallel should be passed in format string
@@ -27,15 +27,13 @@ class Agent:
         """Returns table, which can be received from metadata of database.
         Table identified with TABLE_FORMAT format string for each parallel (8s, 9s, 10s, 11s)
         """
-        return self.__base.metadata.tables[TABLE_FORMAT(user.parallel)]
+        return self.__base.metadata.tables[user.table_name]
 
     def get_week(self, user: User) -> List[TableDay]:
         """Returns weekly schedule for certain class (subclass)"""
         all_weekly_data: List[DatabaseRow] = (
             self.__session.query(self.__get_table(user))
-            .filter_by(
-                subclass=user.subclass
-            )  # database store only one week, so we need to filter only by subclass
+            .filter_by(**user.filter)
             .all()
         )
 
@@ -44,12 +42,7 @@ class Agent:
 
         for table_row in all_weekly_data:
             # extract and rebase data
-            lesson = TableLesson(
-                table_row.lesson_number,
-                table_row.subject,
-                table_row.teacher,
-                table_row.cabinet,
-            )
+            lesson = TableLesson.from_database(table_row)
             # save lessons to certain day
             table_days[table_row.day_of_week - 1].lessons.append(lesson)
         # sort lessons by lesson number
@@ -63,64 +56,37 @@ class Agent:
         all_daily_data: List[DatabaseRow] = (
             self.__session.query(self.__get_table(user))
             .filter_by(
-                subclass=user.subclass, day_of_week=day_of_week
-            )  # filter by subclass and day_of_week
+                day_of_week=day_of_week, **user.filter
+            )  # filter by subclass or teacher name and day_of_week
             .all()
         )
         # rebase data
         return TableDay(
             day_of_week=day_of_week,
             lessons=[
-                TableLesson(
-                    table_row.lesson_number,
-                    table_row.subject,
-                    table_row.teacher,
-                    table_row.cabinet,
-                )
-                for table_row in all_daily_data
+                TableLesson.from_database(table_row) for table_row in all_daily_data
             ],
         )
 
-    def get_lesson(self, user: User, day_of_week: int, lesson_number: int) -> TableLesson:
+    def get_lesson(
+        self, user: User, day_of_week: int, lesson_number: int
+    ) -> TableLesson:
         """Returns lesson for certain class, day and lesson number"""
-        table_row : DatabaseRow = (
+        table_row: DatabaseRow = (
             self.__session.query(self.__get_table(user))
             .filter_by(
                 day_of_week=day_of_week,
                 lesson_number=lesson_number,
-                subclass=user.subclass,
+                **user.filter,
             )
             .first()
         )
+        if not table_row:
+            return None
+        return TableLesson.from_database(table_row)
 
-        return TableLesson(
-            table_row.lesson_number,
-            table_row.subject,
-            table_row.teacher,
-            table_row.cabinet,
-        )
+a = Agent(
+    DatabaseConnection("telegram_user", "YywQZDSOcAaDl8OisL", "skedule.ru", "skedule")
+)
 
-    def find_subclass(self, subclass: str, day_of_week: int, lesson_number: int = None) -> List[TableLesson]:
-        filter = {"subclass": subclass, "day_of_week": day_of_week}
-        if lesson_number is not None:
-            filter["lesson_number"] = lesson_number
-
-        table_data: List[DatabaseRow] = (
-            self.__session.query(self.__get_table(User(subclass=subclass)))
-            .filter_by(**filter)
-            .all()
-        )
-
-        subclass_lessons = []
-
-        for table_lesson in table_data:
-            subclass_lessons.append(
-                TableLesson(
-                    table_lesson.lesson_number,
-                    table_lesson.subject,
-                    table_lesson.teacher,
-                    table_lesson.cabinet,
-                )
-            )
-
-        return subclass_lessons
+user = User("10е1")
