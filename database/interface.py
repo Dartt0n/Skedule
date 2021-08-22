@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.schema import Table
-from database.models import User, DatabaseConnection, TableLesson, TableDay
+from models import User, DatabaseConnection, TableLesson, TableDay
 from typing import List
 
 # Format for table name. Parallel should be passed in format string
@@ -80,3 +80,18 @@ class Agent:
                 for table_row in all_daily_data
             ],
         )
+
+    def get_lesson(self, user: User, day_of_week: int, lesson_number: int):
+        """Returns lesson for certain class, day and lesson number"""
+        table_row = (
+            self.__session.query(self.__get_table(user))
+            .filter_by(
+                day_of_week=day_of_week,
+                lesson_number=lesson_number,
+                subclass=user.subclass,
+            )
+            .first()
+        )
+
+        return TableLesson(table_row.lesson_number, table_row.subject, table_row.teacher, table_row.cabinet)
+
