@@ -3,4 +3,5 @@
 /.idea
 # secret keys
 .properties
-
+# dump data
+*.pickle
