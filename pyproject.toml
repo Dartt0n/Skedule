@@ -1,22 +1,25 @@
 [tool.poetry]
+authors = [
+  "Anton Kudryavtsev <antonkudryavtsevdoem@gmail.com>",
+  "aaartamoshaaa <Artem31052004@yandex.ru>",
+]
+description = ""
 name = "skedule"
 version = "0.1.0"
-description = ""
-authors = ["Dartt0n <antonkudryavtsevdoem@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
 SQLAlchemy = "^1.4.20"
-requests = "^2.25.1"
-python-telegram-bot = "^13.7"
 jproperties = "^2.1.0"
 mariadb = "^1.0.7"
+python = "^3.9"
+python-telegram-bot = "^13.7"
+requests = "^2.25.1"
 
 [tool.poetry.dev-dependencies]
-loguru = "^0.5.3"
 black = "^21.6b0"
+loguru = "^0.5.3"
 ptpython = "^3.0.19"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
