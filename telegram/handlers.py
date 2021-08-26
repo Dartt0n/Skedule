@@ -49,7 +49,10 @@ def startup_handler(update: Update, *args) -> State:
     return State.LOGIN
 
 
-def teacher(update: Update, *args) -> State:
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- LOGIN -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+def ask_teacher_save_name(update: Update, *args) -> State:
     edit_query(
         update,
         text=get_text("save_teacher_name.txt"),
@@ -60,10 +63,10 @@ def teacher(update: Update, *args) -> State:
             ]
         ),
     )
-    return State.LOGIN
+    return State.CHANGE_NAME
 
 
-def student(update: Update, *args) -> State:
+def ask_student_save_class(update: Update, *args) -> State:
     edit_query(
         update,
         text=get_text("save_student_class.txt"),
@@ -81,13 +84,13 @@ def not_save_subclass(update: Update, *args) -> State:
     return State.MAIN_MENU
 
 
-def save_parallel(update: Update, *args) -> State:
+def ask_parallel(update: Update, *args) -> State:
     edit_query(
         update,
         text=get_text("enter_parallel.txt"),
         reply_markup=markup_from(
             [
-                [("8","8"), ("9", "9")],
+                [("8", "8"), ("9", "9")],
                 [("10", "10"), ("11", "11")],
             ]
         ),
@@ -95,33 +98,34 @@ def save_parallel(update: Update, *args) -> State:
     return State.CHANGE_CLASS
 
 
-def save_letter(update: Update, *args) -> State:
+def ask_letter(update: Update, *args) -> State:
     parallel = update.callback_query.data
     edit_query(
         update,
         text=get_text("enter_letter.txt"),
         reply_markup=markup_from(
             [
-                [(letter, parallel+letter) for letter in "абвгдеж"],
-                [(letter, parallel+letter) for letter in "зийклмн"],
-                [(letter, parallel+letter) for letter in "опрстуф"],
-                [(letter, parallel+letter) for letter in "хцчшэюя"],
+                [(letter, parallel + letter) for letter in "абвгдеж"],
+                [(letter, parallel + letter) for letter in "зийклмн"],
+                [(letter, parallel + letter) for letter in "опрстуф"],
+                [(letter, parallel + letter) for letter in "хцчшэюя"],
             ]
-        )
+        ),
     )
     return State.CHANGE_CLASS
 
-def save_group(update: Update, *args) -> State:
+
+def ask_group(update: Update, *args) -> State:
     s_class = update.callback_query.data
     edit_query(
         update,
         text=get_text("enter_letter.txt"),
         reply_markup=markup_from(
             [
-                [("1", s_class+"1")],
-                [("2", s_class+"2")],
+                [("1", s_class + "1")],
+                [("2", s_class + "2")],
             ]
-        )
+        ),
     )
     return State.CHANGE_CLASS
 
@@ -141,6 +145,37 @@ def confirm_class(update: Update, *args) -> State:
     )
     return State.CHANGE_CLASS
 
+
 def save_subclass(update: Update, *args) -> State:
-    # save to db
+    # TODO save to db
     return State.MAIN_MENU
+
+
+def ask_teachers_name(update: Update, *args) -> State:
+    print("1")
+    edit_query(update, text=get_text("enter_name.txt"))
+    return State.CHANGE_NAME
+
+
+def not_save_name(update: Update, *args) -> State:
+    return State.MAIN_MENU
+
+
+def confirm_teacher_name(update: Update, *args) -> State:
+    name = update.message.text
+    edit_query(
+        update,
+        text=get_text("confirm_name") + name,
+        reply_text=markup_from(
+            [[("Да", CallbackEnum.CONFIRM_NAME)], [("Нет", CallbackEnum.CHANGE_NAME)]]
+        ),
+    )
+    return State.CHANGE_NAME
+
+
+def save_teacher_name(update: Update, *args) -> State:
+    # TODO save to bd
+    return State.MAIN_MENU
+
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- MAIN MENU -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-s

@@ -3,6 +3,8 @@ from telegram.ext import (
     CommandHandler,
     CallbackQueryHandler,
     ConversationHandler,
+    MessageHandler,
+    Filters,
 )
 from enums import State, CallbackEnum
 import handlers
@@ -33,33 +35,68 @@ def main() -> None:
         states={
             State.LOGIN: [
                 CallbackQueryHandler(
-                    handlers.teacher, pattern=pattern(CallbackEnum.IM_TEACHER)
+                    pattern=pattern(CallbackEnum.IM_TEACHER),
+                    callback=handlers.ask_teacher_save_name,
                 ),
                 CallbackQueryHandler(
-                    handlers.student, pattern=pattern(CallbackEnum.IM_STUDENT)
+                    pattern=pattern(CallbackEnum.IM_STUDENT),
+                    callback=handlers.ask_student_save_class,
                 ),
             ],
-            State.CHANGE_NAME: [],
+            State.CHANGE_NAME: [
+                # TEACHER
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.SAVE_NAME),
+                    callback=handlers.ask_teachers_name,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHANGE_NAME),
+                    callback=handlers.ask_teachers_name,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.NOT_SAVE_NAME),
+                    callback=handlers.not_save_name,
+                ),
+                MessageHandler(
+                    filters=Filters.regex(
+                        f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s[А-ЯЁ]?\.[А-ЯЁ]?\.*$"
+                    ),  # teachers names
+                    callback=handlers.confirm_teacher_name,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CONFIRM_NAME),
+                    callback=handlers.save_teachers_name,
+                ),
+            ],
             State.CHANGE_CLASS: [
+                # STUDENT
                 CallbackQueryHandler(
-                    handlers.not_save_subclass,
                     pattern=pattern(CallbackEnum.NOT_SAVE_CLASS),
+                    callback=handlers.not_save_subclass,
                 ),
                 CallbackQueryHandler(
-                    handlers.save_parallel, pattern=pattern(CallbackEnum.SAVE_CLASS)
-                ),
-                CallbackQueryHandler(handlers.save_letter, pattern=r"(8|9|10|11)$"),
-                CallbackQueryHandler(
-                    handlers.save_group, pattern="(8|9|10|11)[а-я]$"
+                    pattern=pattern(CallbackEnum.SAVE_CLASS),
+                    callback=handlers.ask_parallel,
                 ),
                 CallbackQueryHandler(
-                    handlers.confirm_class, pattern="(8|9|10|11)[а-я](1|2)$"
+                    pattern=r"([0-9]|10|11)$",  # entered parallel
+                    callback=handlers.ask_letter,
                 ),
                 CallbackQueryHandler(
-                    handlers.save_parallel, pattern=pattern(CallbackEnum.CHANGE_SUBCLASS)
+                    pattern="([0-9]|10|11)[а-я]$",  # entered letter
+                    callback=handlers.ask_group,
                 ),
                 CallbackQueryHandler(
-                    handlers.save_subclass, pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS)
+                    pattern="([0-9]|10|11)[а-я](1|2)$",  # entered group
+                    callback=handlers.confirm_class,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHANGE_SUBCLASS),
+                    callback=handlers.ask_parallel,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS),
+                    callback=handlers.save_subclass,
                 ),
             ],
             State.MAIN_MENU: [],
