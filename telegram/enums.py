@@ -51,3 +51,17 @@ class CallbackEnum(AutoName):
     TUTORIALS = auto()
     EXAMPLES = auto()
     FAQ = auto()
+
+    # another
+    _8PARALLEL = auto()
+    _9PARALLEL = auto()
+    _10PARALLEL = auto()
+    _11PARALLEL = auto()
+
+
+class State(AutoName):
+    MAIN_MENU = auto()
+    CHANGE_CLASS = auto()
+    CHANGE_NAME = auto()
+    LOGIN = auto()
+    
