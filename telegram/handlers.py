@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from typing import Callable, List
+from callback import CallbackEnum
+from typing import Callable, List, Tuple
 from telegram.ext import CallbackContext
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+
 
 @dataclass
 class EventHandler:
@@ -10,7 +12,8 @@ class EventHandler:
 
     def __call__(self, *args, **kwargs):
         self.func(*args, **kwargs)
-    
+
+
 # turn function into EventHandler object
 def event(event: str):
     def decorator(func: Callable):
@@ -20,11 +23,15 @@ def event(event: str):
         return wrapper
     return decorator
 
+
 # save all object i file before implementing functions
 globals_before_impl = set(globals().keys())
 # =========================== SUPPORT FUNCTIONS ================================
 
-def _generate_markup(variants: List[List[str]]) -> InlineKeyboardMarkup:
+
+def _generate_markup(
+    variants: List[List[Tuple[str, CallbackEnum]]]
+) -> InlineKeyboardMarkup:
     """Generate InlineKeyboardMarkup from variants"""
     #  ['1', ['2', '3']] => [  1  ]
     #                       [2] [3]
@@ -34,33 +41,45 @@ def _generate_markup(variants: List[List[str]]) -> InlineKeyboardMarkup:
     #                                            [2] [3] [4]
     #                                            [ 5 ] [ 6 ]
     #                                            [    7    ]
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(button, callback_data=button) for button in row]
-        for row in variants
-    ])
+    keyboard = []
+    for row in variants:
+        keyboard.append([])
+        for column in row:
+            button_text, callback = column
+            keyboard[-1].append(InlineKeyboardButton(text=button_text, callback_data=callback.value))
+    return InlineKeyboardMarkup(keyboard)
+
+
 
 # ========================== WRITE HANDLERS HERE ===============================
 
-@event('start')
+
+@event("start")
 def startup_handler(update: Update, _context: CallbackContext) -> None:
     """Greet new user"""
-    keyboard = _generate_markup([['Ученик'], ['Учитель']])
+    keyboard = _generate_markup(
+        [
+            [("Ученик", CallbackEnum.IM_STUDENT)],
+            [("Учитель", CallbackEnum.IM_TEACHER)]
+        ]
+    )
     update.message.reply_text(text="*place greet text here*", reply_markup=keyboard)
 
-@event('callback')
+
+@event("callback")
 def callback_query_handler(update: Update, _context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
-    print(query)
-    query.edit_message_text(text=f"Selected option: {query.data}")
+    query.edit_message_text(text=f"Selected option: {CallbackEnum(query.data).name}")
+
 
 # ==============================================================================
 
 # substract from set of implemented functions names implemented before (globals_before_impl)
 # and variable globals_before_impl itself
 impl_names = set(globals().keys()) - globals_before_impl - {"globals_before_impl"}
-# list of pointers to functions 
-implemented_handlers: List[EventHandler] = [] # {}
+# list of pointers to functions
+implemented_handlers: List[EventHandler] = []  # {}
 # iterate over new variables (and functions)
 for name in impl_names:
     object = globals()[name]
@@ -68,10 +87,4 @@ for name in impl_names:
     if callable(object) and name[0] != "_":
         # save function
         # implemented_handlers[name] = object() # for dictionary
-        implemented_handlers.append(object()) # <- run decorator
-
-
-if __name__ == "__main__":
-    # show handlers info
-    for handler in implemented_handlers:
-        handler()
+        implemented_handlers.append(object())  # <- run decorator
