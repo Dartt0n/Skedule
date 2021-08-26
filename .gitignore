@@ -5,3 +5,4 @@
 .properties
 # dump data
 *.pickle
+__pycache__
