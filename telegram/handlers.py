@@ -3,6 +3,7 @@ from callback import CallbackEnum
 from typing import Callable, List, Tuple
 from telegram.ext import CallbackContext
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from os import path
 
 
 @dataclass
@@ -28,19 +29,19 @@ def event(event: str):
 globals_before_impl = set(globals().keys())
 # =========================== SUPPORT FUNCTIONS ================================
 
-
+# COLUMNS AND ROWS MANAGEMENT IN TELEGRAM
+#  ['1', ['2', '3']] => [  1  ]
+#                       [2] [3]
+# ['1', '2'] => [ 1 ]
+#               [ 2 ]
+# ['1', ['2', '3', '4'], ['5', '6'], '7'] => [    1    ]
+#                                            [2] [3] [4]
+#                                            [ 5 ] [ 6 ]
+#                                            [    7    ]
 def _generate_markup(
     variants: List[List[Tuple[str, CallbackEnum]]]
 ) -> InlineKeyboardMarkup:
     """Generate InlineKeyboardMarkup from variants"""
-    #  ['1', ['2', '3']] => [  1  ]
-    #                       [2] [3]
-    # ['1', '2'] => [ 1 ]
-    #               [ 2 ]
-    # ['1', ['2', '3', '4'], ['5', '6'], '7'] => [    1    ]
-    #                                            [2] [3] [4]
-    #                                            [ 5 ] [ 6 ]
-    #                                            [    7    ]
     keyboard = []
     for row in variants:
         keyboard.append([])
@@ -49,7 +50,10 @@ def _generate_markup(
             keyboard[-1].append(InlineKeyboardButton(text=button_text, callback_data=callback.value))
     return InlineKeyboardMarkup(keyboard)
 
-
+def _get_text(filename: str) -> str:
+    path_to_file = path.abspath(path.join(path.dirname(__file__), '..', 'resources', 'texts', filename))
+    with open(path_to_file, 'r') as text:
+        return text.read()
 
 # ========================== WRITE HANDLERS HERE ===============================
 
@@ -63,7 +67,7 @@ def startup_handler(update: Update, _context: CallbackContext) -> None:
             [("Учитель", CallbackEnum.IM_TEACHER)]
         ]
     )
-    update.message.reply_text(text="*place greet text here*", reply_markup=keyboard)
+    update.message.reply_text(text=_get_text('greeting.txt'), reply_markup=keyboard)
 
 
 @event("callback")
