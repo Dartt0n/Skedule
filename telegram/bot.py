@@ -1,6 +1,7 @@
 from telegram.ext import Updater, CommandHandler
 from telegram.ext.callbackqueryhandler import CallbackQueryHandler
 from handlers import implemented_handlers
+from jproperties import Properties
 
 
 import logging
@@ -9,8 +10,11 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     """Run the bot."""
+    properties = Properties()
+    with open('.properties' , 'rb') as config:
+        properties.load(config)
     # Create the Updater and pass it your bot's token.
-    updater = Updater("")
+    updater = Updater(properties["TG_TOKEN"].data)
 
     for handler in implemented_handlers:
         if handler.event == "callback":
