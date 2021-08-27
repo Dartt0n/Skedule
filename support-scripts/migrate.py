@@ -18,9 +18,9 @@ def get_config(key: str) -> Any:
 
 
 DB_USER_NAME = "root"
-DB_DATABASE_NAME = "skedule"
+DB_DATABASE_NAME = get_config("DB_DATABASE_NAME")
 DB_USER_PASSWORD = get_config("DB_ROOT_PASSWORD")
-DB_DATABASE_HOST = "skedule.com"
+DB_DATABASE_HOST = get_config("DB_DATABASE_HOST")
 
 # create engine for remote database
 mariadb = create_engine(

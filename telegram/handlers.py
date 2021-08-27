@@ -2,8 +2,10 @@ from telegram import Update
 from enums import State, CallbackEnum
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from os import path
+from database.telegram import TelegramUser, TelegramAgent
+from database.interface import Agent
 
-
+tg_agent = TelegramAgent()
 # COLUMNS AND ROWS MANAGEMENT IN TELEGRAM
 #                                                    [    1    ]
 #                                                    [2] [3] [4]
@@ -41,7 +43,24 @@ def edit_query(update, *args, **kwargs):
 
 def startup_handler(update: Update, *args) -> State:
     """Greet new user"""
-    # check if user is registered, if it is, skip
+    t_id = update.message.chat.id
+    if tg_agent.check_user(t_id):
+        update.message.reply_text(
+            text=get_text("help_message.txt"),
+            reply_markup=markup_from(
+                [
+                    [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+                    [
+                        ("Сегодня", CallbackEnum.CHECK_TODAY),
+                        ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                    ],
+                    [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                    [("Неделя", CallbackEnum.CHECK_WEEK)],
+                    [("Другое", CallbackEnum.MISC_MENU)],
+                ]
+            ),
+        )
+        return State.MAIN_MENU
     keyboard = markup_from(
         [[("Ученик", CallbackEnum.IM_STUDENT)], [("Учитель", CallbackEnum.IM_TEACHER)]]
     )
@@ -101,6 +120,8 @@ def ask_student_save_class(update: Update, *args) -> State:
 
 
 def not_save_subclass(update: Update, *args) -> State:
+    t_id = update.callback_query.message.chat.id
+    tg_agent.create_new_user(telegram_id=t_id, is_student=True)
     return main_menu(update, *args)
 
 
@@ -152,13 +173,12 @@ def ask_group(update: Update, *args) -> State:
 
 def confirm_class(update: Update, *args) -> State:
     subclass = update.callback_query.data
-    # TODO save letter
     edit_query(
         update,
         text=get_text("confirm_class.txt") + subclass,
         reply_markup=markup_from(
             [
-                [("Да", CallbackEnum.CONFIRM_SUBCLASS)],
+                [("Да", CallbackEnum.CONFIRM_SUBCLASS.value + f"_{subclass}")],
                 [("Нет", CallbackEnum.CHANGE_SUBCLASS)],
             ]
         ),
@@ -167,7 +187,12 @@ def confirm_class(update: Update, *args) -> State:
 
 
 def save_subclass(update: Update, *args) -> State:
-    # TODO save to db
+    subclass = update.callback_query.data.split('_')[-1]
+    t_id = update.callback_query.message.chat.id
+    if not tg_agent.check_user(t_id):
+        tg_agent.create_new_user(telegram_id=t_id, is_student=True, subclass=subclass)
+    else:
+        tg_agent.change_subclass(t_id, subclass)
     return main_menu(update, *args)
 
 
@@ -177,25 +202,9 @@ def ask_teachers_name(update: Update, *args) -> State:
 
 
 def not_save_name(update: Update, *args) -> State:
-    edit_query(
-        update,
-        text=get_text("main_menu_text.txt"),
-        reply_markup=markup_from(
-            [
-                [
-                    ("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON),
-                    ("Сегодня", CallbackEnum.CHECK_TODAY),
-                ],
-                [
-                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                    ("Неделя", CallbackEnum.CHECK_WEEK),
-                ],
-                [("Определенный день недели", CallbackEnum.CHECK_CERTAIN_DAY)],
-                [("Другое", CallbackEnum.MISC_MENU)],
-            ]
-        ),
-    )
-    return State.MAIN_MENU
+    t_id = update.callback_query.message.chat.id
+    tg_agent.create_new_user(telegram_id=t_id, is_student=False)
+    return main_menu(update, *args)
 
 
 def confirm_teacher_name(update: Update, *args) -> State:
@@ -203,14 +212,19 @@ def confirm_teacher_name(update: Update, *args) -> State:
     update.message.reply_text(
         text=get_text("confirm_name.txt") + name,
         reply_markup=markup_from(
-            [[("Да", CallbackEnum.CONFIRM_NAME)], [("Нет", CallbackEnum.CHANGE_NAME)]]
+            [[("Да", CallbackEnum.CONFIRM_NAME.value + f"_{name}")], [("Нет", CallbackEnum.CHANGE_NAME)]]
         ),
     )
     return State.CHANGE_NAME
 
 
 def save_teacher_name(update: Update, *args) -> State:
-    # TODO save to bd
+    name = update.callback_query.data.split('_')[-1]
+    t_id = update.callback_query.message.chat.id
+    if not tg_agent.check_user(t_id):
+        tg_agent.create_new_user(telegram_id=t_id, is_student=False, teacher_name=name)
+    else:
+        tg_agent.change_teacher(t_id, name)
     return main_menu(update, *args)
 
 

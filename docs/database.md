@@ -18,7 +18,7 @@ CREATE TABLE users (
   id INT NOT NULL AUTO_INCREMENT,
   is_student BOOL NOT NULL,
   subclass VARCHAR(15) NULL,
-  teacher_name VARCHAR(50) NULL,
+  teacher_name VARCHAR(100) NULL,
   status TINYINT NOT NULL,
   requests_left TINYINT NOT NULL,
   last_payment_datetime DATETIME NOT NULL,

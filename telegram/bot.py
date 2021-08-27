@@ -64,7 +64,7 @@ def main() -> None:
                     callback=handlers.confirm_teacher_name,
                 ),
                 CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.CONFIRM_NAME),
+                    pattern="^"+CallbackEnum.CONFIRM_NAME.value,
                     callback=handlers.save_teacher_name,
                 ),
             ],
@@ -95,7 +95,7 @@ def main() -> None:
                     callback=handlers.ask_parallel,
                 ),
                 CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS),
+                    pattern="^"+CallbackEnum.CONFIRM_SUBCLASS.value,
                     callback=handlers.save_subclass,
                 ),
             ],
