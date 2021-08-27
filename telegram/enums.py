@@ -22,7 +22,7 @@ class CallbackEnum(AutoName):
     CHANGE_NAME = auto()
     # main menu
     CHECK_NEXT_LESSON = auto()
-    CHECK_WEEKS = auto()
+    CHECK_WEEK = auto()
     CHECK_TODAY = auto()
     CHECK_TOMORROW = auto()
     CHECK_CERTAIN_DAY = auto()
@@ -51,13 +51,6 @@ class CallbackEnum(AutoName):
     TUTORIALS = auto()
     EXAMPLES = auto()
     FAQ = auto()
-
-    # another
-    _8PARALLEL = auto()
-    _9PARALLEL = auto()
-    _10PARALLEL = auto()
-    _11PARALLEL = auto()
-
 
 class State(AutoName):
     MAIN_MENU = auto()

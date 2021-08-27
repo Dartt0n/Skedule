@@ -49,6 +49,28 @@ def startup_handler(update: Update, *args) -> State:
     return State.LOGIN
 
 
+def main_menu(update: Update, *args) -> State:
+    edit_query(
+        update,
+        text=get_text("main_menu_text.txt"),
+        reply_markup=markup_from(
+            [
+                [
+                    ("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON),
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                ],
+                [
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                    ("Неделя", CallbackEnum.CHECK_WEEK),
+                ],
+                [("Определенный день недели", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Другое", CallbackEnum.MISC_MENU)],
+            ]
+        ),
+    )
+    return State.MAIN_MENU
+
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- LOGIN -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
@@ -81,7 +103,7 @@ def ask_student_save_class(update: Update, *args) -> State:
 
 
 def not_save_subclass(update: Update, *args) -> State:
-    return State.MAIN_MENU
+    return main_menu(update, *args)
 
 
 def ask_parallel(update: Update, *args) -> State:
@@ -148,25 +170,41 @@ def confirm_class(update: Update, *args) -> State:
 
 def save_subclass(update: Update, *args) -> State:
     # TODO save to db
-    return State.MAIN_MENU
+    return main_menu(update, *args)
 
 
 def ask_teachers_name(update: Update, *args) -> State:
-    print("1")
     edit_query(update, text=get_text("enter_name.txt"))
     return State.CHANGE_NAME
 
 
 def not_save_name(update: Update, *args) -> State:
+    edit_query(
+        update,
+        text=get_text("main_menu_text.txt"),
+        reply_markup=markup_from(
+            [
+                [
+                    ("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON),
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                ],
+                [
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                    ("Неделя", CallbackEnum.CHECK_WEEK),
+                ],
+                [("Определенный день недели", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Другое", CallbackEnum.MISC_MENU)],
+            ]
+        ),
+    )
     return State.MAIN_MENU
 
 
 def confirm_teacher_name(update: Update, *args) -> State:
     name = update.message.text
-    edit_query(
-        update,
-        text=get_text("confirm_name") + name,
-        reply_text=markup_from(
+    update.message.reply_text(
+        text=get_text("confirm_name.txt") + name,
+        reply_markup=markup_from(
             [[("Да", CallbackEnum.CONFIRM_NAME)], [("Нет", CallbackEnum.CHANGE_NAME)]]
         ),
     )
@@ -175,7 +213,24 @@ def confirm_teacher_name(update: Update, *args) -> State:
 
 def save_teacher_name(update: Update, *args) -> State:
     # TODO save to bd
-    return State.MAIN_MENU
+    return main_menu(update, *args)
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- MAIN MENU -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-s
+def misc_menu(update: Update, *args) -> State:
+    edit_query(
+        update,
+        text=get_text("misc_menu.txt"),
+        reply_markup=markup_from(
+            [
+                [
+                    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
+                    ("Найти учителя", CallbackEnum.FIND_TEACHER),
+                ],
+                [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
+                [("Полезные материалы", CallbackEnum.HELPFUL_LINKS)],
+                [("Помощь", CallbackEnum.HELP)],
+                [("Изменить информацию", CallbackEnum.CHANGE_INFORMATION)],
+            ]
+        ),
+    )

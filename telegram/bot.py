@@ -59,13 +59,13 @@ def main() -> None:
                 ),
                 MessageHandler(
                     filters=Filters.regex(
-                        f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s[А-ЯЁ]?\.[А-ЯЁ]?\.*$"
+                        f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s[А-ЯЁ]\.\s?[А-ЯЁ]\.$"
                     ),  # teachers names
                     callback=handlers.confirm_teacher_name,
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.CONFIRM_NAME),
-                    callback=handlers.save_teachers_name,
+                    callback=handlers.save_teacher_name,
                 ),
             ],
             State.CHANGE_CLASS: [
@@ -99,7 +99,12 @@ def main() -> None:
                     callback=handlers.save_subclass,
                 ),
             ],
-            State.MAIN_MENU: [],
+            State.MAIN_MENU: [
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.MISC_MENU),
+                    callback=handlers.misc_menu
+                ),
+            ],
         },
         fallbacks=[CommandHandler("start", handlers.startup_handler)],
     )
