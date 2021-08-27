@@ -55,15 +55,13 @@ def main_menu(update: Update, *args) -> State:
         text=get_text("main_menu_text.txt"),
         reply_markup=markup_from(
             [
+                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
                 [
-                    ("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON),
                     ("Сегодня", CallbackEnum.CHECK_TODAY),
-                ],
-                [
                     ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                    ("Неделя", CallbackEnum.CHECK_WEEK),
                 ],
-                [("Определенный день недели", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Неделя", CallbackEnum.CHECK_WEEK)],
                 [("Другое", CallbackEnum.MISC_MENU)],
             ]
         ),
@@ -230,7 +228,7 @@ def misc_menu(update: Update, *args) -> State:
                 [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
                 [("Полезные материалы", CallbackEnum.HELPFUL_LINKS)],
                 [("Помощь", CallbackEnum.HELP)],
-                [("Изменить информацию", CallbackEnum.CHANGE_INFORMATION)],
+                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
             ]
         ),
     )
