@@ -1,1 +1,1 @@
-confirm name
+Ваши инициалы - {teacher_name}, верно?
