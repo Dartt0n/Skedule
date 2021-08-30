@@ -104,6 +104,10 @@ def main() -> None:
                     pattern=pattern(CallbackEnum.MISC_MENU),
                     callback=handlers.misc_menu
                 ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.MAIN_MENU),
+                    callback=handlers.main_menu
+                )
             ],
         },
         fallbacks=[CommandHandler("start", handlers.startup_handler)],
