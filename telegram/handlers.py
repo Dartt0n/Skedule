@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram.ext import CallbackContext
 from enums import State, CallbackEnum
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from os import path
@@ -41,7 +41,7 @@ def edit_query(update, *args, **kwargs):
     query.edit_message_text(*args, **kwargs)
 
 
-def startup_handler(update: Update, *args) -> State:
+def startup_handler(update: Update, context) -> State:
     """Greet new user"""
     t_id = update.message.chat.id
     if tg_agent.check_user(t_id):
@@ -68,7 +68,7 @@ def startup_handler(update: Update, *args) -> State:
     return State.LOGIN
 
 
-def main_menu(update: Update, *args) -> State:
+def main_menu(update: Update, context) -> State:
     edit_query(
         update,
         text=get_text("main_menu_text.txt"),
@@ -91,7 +91,7 @@ def main_menu(update: Update, *args) -> State:
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- LOGIN -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-def ask_teacher_save_name(update: Update, *args) -> State:
+def ask_teacher_save_name(update: Update, context) -> State:
     edit_query(
         update,
         text=get_text("save_teacher_name.txt"),
@@ -105,7 +105,7 @@ def ask_teacher_save_name(update: Update, *args) -> State:
     return State.CHANGE_NAME
 
 
-def ask_student_save_class(update: Update, *args) -> State:
+def ask_student_save_class(update: Update, context) -> State:
     edit_query(
         update,
         text=get_text("save_student_class.txt"),
@@ -119,13 +119,13 @@ def ask_student_save_class(update: Update, *args) -> State:
     return State.CHANGE_CLASS
 
 
-def not_save_subclass(update: Update, *args) -> State:
+def not_save_subclass(update: Update, context) -> State:
     t_id = update.callback_query.message.chat.id
     tg_agent.create_new_user(telegram_id=t_id, is_student=True)
-    return main_menu(update, *args)
+    return main_menu(update, context)
 
 
-def ask_parallel(update: Update, *args) -> State:
+def ask_parallel(update: Update, context) -> State:
     edit_query(
         update,
         text=get_text("enter_parallel.txt"),
@@ -139,24 +139,25 @@ def ask_parallel(update: Update, *args) -> State:
     return State.CHANGE_CLASS
 
 
-def ask_letter(update: Update, *args) -> State:
+def ask_letter(update: Update, context) -> State:
     parallel = update.callback_query.data
     edit_query(
         update,
         text=get_text("enter_letter.txt"),
         reply_markup=markup_from(
             [
-                [(letter, parallel + letter) for letter in "абвгдеж"],
-                [(letter, parallel + letter) for letter in "зийклмн"],
-                [(letter, parallel + letter) for letter in "опрстуф"],
-                [(letter, parallel + letter) for letter in "хцчшэюя"],
+                [(f"   {letter}   ", parallel + letter) for letter in "абвгде"],
+                [(f"   {letter}   ", parallel + letter) for letter in "жзийкл"],
+                [(f"   {letter}   ", parallel + letter) for letter in "мнопрс"],
+                [(f"   {letter}   ", parallel + letter) for letter in "туфхц"],
+                [(f"   {letter}   ", parallel + letter) for letter in "чшэюя"]
             ]
         ),
     )
     return State.CHANGE_CLASS
 
 
-def ask_group(update: Update, *args) -> State:
+def ask_group(update: Update, context) -> State:
     s_class = update.callback_query.data
     edit_query(
         update,
@@ -171,11 +172,11 @@ def ask_group(update: Update, *args) -> State:
     return State.CHANGE_CLASS
 
 
-def confirm_class(update: Update, *args) -> State:
+def confirm_class(update: Update, context) -> State:
     subclass = update.callback_query.data
     edit_query(
         update,
-        text=get_text("confirm_class.txt") + subclass,
+        text=get_text("confirm_class.txt").format(subclass=subclass),
         reply_markup=markup_from(
             [
                 [("Да", CallbackEnum.CONFIRM_SUBCLASS.value + f"_{subclass}")],
@@ -186,50 +187,54 @@ def confirm_class(update: Update, *args) -> State:
     return State.CHANGE_CLASS
 
 
-def save_subclass(update: Update, *args) -> State:
-    subclass = update.callback_query.data.split('_')[-1]
+def save_subclass(update: Update, context) -> State:
+    subclass = update.callback_query.data.split("_")[-1]
     t_id = update.callback_query.message.chat.id
     if not tg_agent.check_user(t_id):
         tg_agent.create_new_user(telegram_id=t_id, is_student=True, subclass=subclass)
     else:
         tg_agent.change_subclass(t_id, subclass)
-    return main_menu(update, *args)
+    return main_menu(update, context)
 
 
-def ask_teachers_name(update: Update, *args) -> State:
+def ask_teachers_name(update: Update, context) -> State:
     edit_query(update, text=get_text("enter_name.txt"))
     return State.CHANGE_NAME
 
 
-def not_save_name(update: Update, *args) -> State:
+def not_save_name(update: Update, context) -> State:
     t_id = update.callback_query.message.chat.id
     tg_agent.create_new_user(telegram_id=t_id, is_student=False)
-    return main_menu(update, *args)
+    return main_menu(update, context)
 
 
-def confirm_teacher_name(update: Update, *args) -> State:
+def confirm_teacher_name(update: Update, context) -> State:
+    print(context)
     name = update.message.text
     update.message.reply_text(
         text=get_text("confirm_name.txt") + name,
         reply_markup=markup_from(
-            [[("Да", CallbackEnum.CONFIRM_NAME.value + f"_{name}")], [("Нет", CallbackEnum.CHANGE_NAME)]]
+            [
+                [("Да", CallbackEnum.CONFIRM_NAME.value + f"_{name}")],
+                [("Нет", CallbackEnum.CHANGE_NAME)],
+            ]
         ),
     )
     return State.CHANGE_NAME
 
 
-def save_teacher_name(update: Update, *args) -> State:
-    name = update.callback_query.data.split('_')[-1]
+def save_teacher_name(update: Update, context) -> State:
+    name = update.callback_query.data.split("_")[-1]
     t_id = update.callback_query.message.chat.id
     if not tg_agent.check_user(t_id):
         tg_agent.create_new_user(telegram_id=t_id, is_student=False, teacher_name=name)
     else:
         tg_agent.change_teacher(t_id, name)
-    return main_menu(update, *args)
+    return main_menu(update, context)
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- MAIN MENU -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-s
-def misc_menu(update: Update, *args) -> State:
+def misc_menu(update: Update, context) -> State:
     edit_query(
         update,
         text=get_text("misc_menu.txt"),
@@ -243,6 +248,8 @@ def misc_menu(update: Update, *args) -> State:
                 [("Полезные материалы", CallbackEnum.HELPFUL_LINKS)],
                 [("Помощь", CallbackEnum.HELP)],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)]
             ]
         ),
     )
+    return State.MAIN_MENU

@@ -33,6 +33,7 @@ class CallbackEnum(AutoName):
     ANNOUNCEMENTS = auto()
     HELPFUL_LINKS = auto()
     HELP = auto()
+    MAIN_MENU = auto()
     CHANGE_INFORMATION = auto()
     # find class
     FIND_SUBCLASS_NOW = auto()

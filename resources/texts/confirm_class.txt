@@ -1,1 +1,1 @@
-your class:
+your class: {subclass} test
