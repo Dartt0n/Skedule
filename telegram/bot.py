@@ -36,11 +36,11 @@ def main() -> None:
             State.LOGIN: [
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.IM_TEACHER),
-                    callback=handlers.ask_teacher_save_name,
+                    callback=handlers.ask_teacher_want_save_name,
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.IM_STUDENT),
-                    callback=handlers.ask_student_save_class,
+                    callback=handlers.ask_student_want_save_class,
                 ),
             ],
             State.CHANGE_NAME: [
@@ -76,15 +76,15 @@ def main() -> None:
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.SAVE_CLASS),
-                    callback=handlers.ask_parallel,
+                    callback=handlers.choose_parallel,
                 ),
                 CallbackQueryHandler(
                     pattern=r"([0-9]|10|11)$",  # entered parallel
-                    callback=handlers.ask_letter,
+                    callback=handlers.choose_letter,
                 ),
                 CallbackQueryHandler(
                     pattern="([0-9]|10|11)[а-я]$",  # entered letter
-                    callback=handlers.ask_group,
+                    callback=handlers.choose_group,
                 ),
                 CallbackQueryHandler(
                     pattern="([0-9]|10|11)[а-я](1|2)$",  # entered group
@@ -92,11 +92,11 @@ def main() -> None:
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.CHANGE_SUBCLASS),
-                    callback=handlers.ask_parallel,
+                    callback=handlers.choose_parallel,
                 ),
                 CallbackQueryHandler(
                     pattern="^" + CallbackEnum.CONFIRM_SUBCLASS.value,
-                    callback=handlers.save_subclass,
+                    callback=handlers.save_subclass_to_database,
                 ),
             ],
             State.MAIN_MENU: [
@@ -116,6 +116,14 @@ def main() -> None:
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.CHECK_WEEK), callback=handlers.get_week
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHECK_CERTAIN_DAY),
+                    callback=handlers.select_dayweek,
+                ),
+                CallbackQueryHandler(
+                    pattern=f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]",
+                    callback=handlers.get_timetable_for_certain_day,
                 ),
             ],
         },

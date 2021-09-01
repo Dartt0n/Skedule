@@ -26,7 +26,7 @@ class CallbackEnum(AutoName):
     CHECK_TODAY = auto()
     CHECK_TOMORROW = auto()
     CHECK_CERTAIN_DAY = auto()
-    SELECT_DAY_OF_WEEL = auto()
+    SELECT_DAY_OF_WEEK = auto()
     MISC_MENU = auto()
     # misc menu
     FIND_SUBCLASS = auto()

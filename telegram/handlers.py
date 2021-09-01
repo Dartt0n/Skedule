@@ -1,66 +1,33 @@
 from enums import State, CallbackEnum
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from os import path
+from telegram import Update
 from database.telegram import TelegramAgent
 from database.interface import Agent
 from datetime import datetime
+from .support_functions import markup_from, get_text, edit_query
 
-
-tg_agent = TelegramAgent()
-agent = Agent()
-# COLUMNS AND ROWS MANAGEMENT IN TELEGRAM
-#                                                    [    1    ]
-#                                                    [2] [3] [4]
-# ['1', ['2', '3', '4'], ['5'], ['6', '7'], '8'] =>  [    5    ]
-#                                                    [ 5 ] [ 6 ]
-#                                                    [    7    ]
-def markup_from(variants) -> InlineKeyboardMarkup:
-    """Generate InlineKeyboardMarkup from variants"""
-    keyboard = []
-    for row in variants:
-        keyboard.append([])
-        for column in row:
-            button_text, callback = column
-            if isinstance(callback, CallbackEnum):
-                callback = callback.value
-            keyboard[-1].append(
-                InlineKeyboardButton(text=button_text, callback_data=callback)
-            )
-    return InlineKeyboardMarkup(keyboard)
-
-
-def get_text(filename: str) -> str:
-    path_to_file = path.abspath(
-        path.join(path.dirname(__file__), "..", "resources", "texts", filename)
-    )
-    with open(path_to_file, "r") as text:
-        return text.read()
-
-
-def edit_query(update: Update, *args, **kwargs):
-    query = update.callback_query
-    query.answer()
-    query.edit_message_text(*args, **kwargs)
+TGA = TelegramAgent()
+AGENT = Agent()
+MAIN_MENU_MARKUP = markup_from(
+    [
+        [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+        [
+            ("Сегодня", CallbackEnum.CHECK_TODAY),
+            ("Завтра", CallbackEnum.CHECK_TOMORROW),
+        ],
+        [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+        [("Неделя", CallbackEnum.CHECK_WEEK)],
+        [("Другое", CallbackEnum.MISC_MENU)],
+    ]
+)
 
 
 def startup_handler(update: Update, context) -> State:
     """Greet new user"""
     t_id = update.message.chat.id
-    if tg_agent.check_user(t_id):
+    if TGA.check_user(t_id):
         update.message.reply_text(
             text=get_text("main_menu.txt"),
-            reply_markup=markup_from(
-                [
-                    [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
-                    [
-                        ("Сегодня", CallbackEnum.CHECK_TODAY),
-                        ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                    ],
-                    [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
-                    [("Неделя", CallbackEnum.CHECK_WEEK)],
-                    [("Другое", CallbackEnum.MISC_MENU)],
-                ]
-            ),
+            reply_markup=MAIN_MENU_MARKUP,
         )
         return State.MAIN_MENU
     keyboard = markup_from(
@@ -74,18 +41,7 @@ def main_menu(update: Update, context) -> State:
     edit_query(
         update,
         text=get_text("main_menu.txt"),
-        reply_markup=markup_from(
-            [
-                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
-                [
-                    ("Сегодня", CallbackEnum.CHECK_TODAY),
-                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                ],
-                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
-                [("Неделя", CallbackEnum.CHECK_WEEK)],
-                [("Другое", CallbackEnum.MISC_MENU)],
-            ]
-        ),
+        reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
@@ -93,7 +49,7 @@ def main_menu(update: Update, context) -> State:
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- LOGIN -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-def ask_teacher_save_name(update: Update, context) -> State:
+def ask_teacher_want_save_name(update: Update, context) -> State.CHANGE_NAME:
     edit_query(
         update,
         text=get_text("save_teacher_name.txt"),
@@ -107,7 +63,7 @@ def ask_teacher_save_name(update: Update, context) -> State:
     return State.CHANGE_NAME
 
 
-def ask_student_save_class(update: Update, context) -> State:
+def ask_student_want_save_class(update: Update, context) -> State.CHANGE_CLASS:
     edit_query(
         update,
         text=get_text("save_student_class.txt"),
@@ -121,13 +77,13 @@ def ask_student_save_class(update: Update, context) -> State:
     return State.CHANGE_CLASS
 
 
-def not_save_subclass(update: Update, context) -> State:
+def not_save_subclass(update: Update, context) -> State.MAIN_MENU:
     t_id = update.callback_query.message.chat.id
-    tg_agent.create_new_user(telegram_id=t_id, is_student=True)
+    TGA.create_new_user(telegram_id=t_id, is_student=True)
     return main_menu(update, context)
 
 
-def ask_parallel(update: Update, context) -> State:
+def choose_parallel(update: Update, context) -> State.CHANGE_CLASS:
     edit_query(
         update,
         text=get_text("enter_parallel.txt"),
@@ -141,7 +97,7 @@ def ask_parallel(update: Update, context) -> State:
     return State.CHANGE_CLASS
 
 
-def ask_letter(update: Update, context) -> State:
+def choose_letter(update: Update, context) -> State.CHANGE_CLASS:
     parallel = update.callback_query.data
     edit_query(
         update,
@@ -159,7 +115,7 @@ def ask_letter(update: Update, context) -> State:
     return State.CHANGE_CLASS
 
 
-def ask_group(update: Update, context) -> State:
+def choose_group(update: Update, context) -> State.CHANGE_CLASS:
     s_class = update.callback_query.data
     edit_query(
         update,
@@ -174,7 +130,7 @@ def ask_group(update: Update, context) -> State:
     return State.CHANGE_CLASS
 
 
-def confirm_class(update: Update, context) -> State:
+def confirm_class(update: Update, context) -> State.CHANGE_CLASS:
     subclass = update.callback_query.data
     edit_query(
         update,
@@ -189,28 +145,28 @@ def confirm_class(update: Update, context) -> State:
     return State.CHANGE_CLASS
 
 
-def save_subclass(update: Update, context) -> State:
+def save_subclass_to_database(update: Update, context) -> State.CHANGE_CLASS:
     subclass = update.callback_query.data.split("_")[-1]
     t_id = update.callback_query.message.chat.id
-    if not tg_agent.check_user(t_id):
-        tg_agent.create_new_user(telegram_id=t_id, is_student=True, subclass=subclass)
+    if not TGA.check_user(t_id):
+        TGA.create_new_user(telegram_id=t_id, is_student=True, subclass=subclass)
     else:
-        tg_agent.change_subclass(t_id, subclass)
+        TGA.change_subclass(t_id, subclass)
     return main_menu(update, context)
 
 
-def ask_teachers_name(update: Update, context) -> State:
+def ask_teachers_name(update: Update, context) -> State.CHANGE_NAME:
     edit_query(update, text=get_text("enter_name.txt"))
     return State.CHANGE_NAME
 
 
-def not_save_name(update: Update, context) -> State:
+def not_save_name(update: Update, context) -> State.CHANGE_NAME:
     t_id = update.callback_query.message.chat.id
-    tg_agent.create_new_user(telegram_id=t_id, is_student=False)
+    TGA.create_new_user(telegram_id=t_id, is_student=False)
     return main_menu(update, context)
 
 
-def confirm_teacher_name(update: Update, context) -> State:
+def confirm_teacher_name(update: Update, context) -> State.CHANGE_NAME:
     name = update.message.text
     update.message.reply_text(
         text=get_text("confirm_name.txt").format(teacher_name=name),
@@ -224,18 +180,18 @@ def confirm_teacher_name(update: Update, context) -> State:
     return State.CHANGE_NAME
 
 
-def save_teacher_name(update: Update, context) -> State:
+def save_teacher_name(update: Update, context) -> State.MAIN_MENU:
     name = update.callback_query.data.split("_")[-1]
     t_id = update.callback_query.message.chat.id
-    if not tg_agent.check_user(t_id):
-        tg_agent.create_new_user(telegram_id=t_id, is_student=False, teacher_name=name)
+    if not TGA.check_user(t_id):
+        TGA.create_new_user(telegram_id=t_id, is_student=False, teacher_name=name)
     else:
-        tg_agent.change_teacher_name(t_id, name)
+        TGA.change_teacher_name(t_id, name)
     return main_menu(update, context)
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- MAIN MENU -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-s
-def misc_menu(update: Update, context) -> State:
+def misc_menu(update: Update, context) -> State.MAIN_MENU:
     edit_query(
         update,
         text=get_text("misc_menu.txt"),
@@ -256,12 +212,12 @@ def misc_menu(update: Update, context) -> State:
     return State.MAIN_MENU
 
 
-def get_timetable_today(update: Update, context) -> State:
-    user = tg_agent.get_user(update.callback_query.message.chat_id)
-    timetable = agent.get_day(user, datetime.today().weekday() + 1)
+def get_timetable_today(update: Update, context) -> State.MAIN_MENU:
+    user = TGA.get_user(update.callback_query.message.chat_id)
+    timetable = AGENT.get_day(user, datetime.today().weekday() + 1)
 
     # get image
-    text = f"День недели: {timetable.day_of_week}\n"+"\n\n".join(
+    text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
         [
             f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
             for lesson in timetable.lessons
@@ -271,28 +227,17 @@ def get_timetable_today(update: Update, context) -> State:
     edit_query(
         update,
         text=text,
-        reply_markup=markup_from(
-            [
-                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
-                [
-                    ("Сегодня", CallbackEnum.CHECK_TODAY),
-                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                ],
-                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
-                [("Неделя", CallbackEnum.CHECK_WEEK)],
-                [("Другое", CallbackEnum.MISC_MENU)],
-            ]
-        ),
+        reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
 
-def get_timetable_tomorrow(update: Update, context) -> State:
-    user = tg_agent.get_user(update.callback_query.message.chat_id)
-    timetable = agent.get_day(user, (datetime.today().weekday() + 1) % 7 + 1)
+def get_timetable_tomorrow(update: Update, context) -> State.MAIN_MENU:
+    user = TGA.get_user(update.callback_query.message.chat_id)
+    timetable = AGENT.get_day(user, (datetime.today().weekday() + 1) % 7 + 1)
 
     # get image
-    text =f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
+    text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
         [
             f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
             for lesson in timetable.lessons
@@ -302,67 +247,71 @@ def get_timetable_tomorrow(update: Update, context) -> State:
     edit_query(
         update,
         text=text,
-        reply_markup=markup_from(
-            [
-                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
-                [
-                    ("Сегодня", CallbackEnum.CHECK_TODAY),
-                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                ],
-                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
-                [("Неделя", CallbackEnum.CHECK_WEEK)],
-                [("Другое", CallbackEnum.MISC_MENU)],
-            ]
-        ),
+        reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
 
-def get_week(update: Update, context) -> State:
-    user = tg_agent.get_user(update.callback_query.message.chat_id)
-    week_timetable = agent.get_week(user)
+def get_week(update: Update, context) -> State.MAIN_MENU:
+    user = TGA.get_user(update.callback_query.message.chat_id)
+    week_timetable = AGENT.get_week(user)
 
-    text = ("\n"+"-"*20+"\n\n\n").join([
-        f"День недели: {timetable.day_of_week}\n"
-        + "\n\n".join(
-            [
-                f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
-                for lesson in timetable.lessons
-            ]
-        )
-        for timetable in week_timetable
-    ])
+    text = ("\n" + "-" * 20 + "\n\n\n").join(
+        [
+            f"День недели: {timetable.day_of_week}\n"
+            + "\n\n".join(
+                [
+                    f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
+                    for lesson in timetable.lessons
+                ]
+            )
+            for timetable in week_timetable
+        ]
+    )
 
     edit_query(
         update,
         text=text,
-        reply_markup=markup_from(
-            [
-                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
-                [
-                    ("Сегодня", CallbackEnum.CHECK_TODAY),
-                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
-                ],
-                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
-                [("Неделя", CallbackEnum.CHECK_WEEK)],
-                [("Другое", CallbackEnum.MISC_MENU)],
-            ]
-        ),
+        reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
-def select_dayweek(update: Update, context) -> State:
+
+def select_dayweek(update: Update, context) -> State.MAIN_MENU:
     edit_query(
         update,
         text=get_text("select_dayweek.txt"),
         reply_markup=markup_from(
             [
-                [("Понедельник", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_1")],
-                [("Вторник", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_2")],
-                [("Среда", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_3")],
-                [("Четверг", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_4")],
-                [("Пятница", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_5")],
-                [("Суббота", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_6")]
+                [("Понедельник", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_1")],
+                [("Вторник", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_2")],
+                [("Среда", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_3")],
+                [("Четверг", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_4")],
+                [("Пятница", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_5")],
+                [("Суббота", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_6")],
             ]
-        )
+        ),
     )
+    return State.MAIN_MENU
+
+
+def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
+    user = TGA.get_user(update.callback_query.message.chat_id)
+    day_of_week = update.callback_query.data.split("_")[-1]
+
+    timetable = AGENT.get_day(user, int(day_of_week))
+
+    # get image
+    text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
+        [
+            f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+            for lesson in timetable.lessons
+        ]
+    )
+
+    edit_query(
+        update,
+        text=text,
+        reply_markup=MAIN_MENU_MARKUP,
+    )
+    return State.MAIN_MENU
