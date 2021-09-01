@@ -63,6 +63,11 @@ class User:
     table_name: str
     filter: Dict[str, Any]
 
+    def from_database(user):
+        if user.is_student:
+            return Student(user.subclass)
+        return Teacher(user.teacher_name)        
+
 class Teacher(User):
     def __init__(self, name: str):
         self.name = name

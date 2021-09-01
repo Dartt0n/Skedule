@@ -12,8 +12,7 @@ from sqlalchemy.orm.session import sessionmaker
 from jproperties import Properties
 from typing import Any
 from os import path
-
-import telegram
+from database.models import User
 
 Base = declarative_base()
 
@@ -46,7 +45,6 @@ class TelegramAgent:
         DB_DATABASE_NAME = get_config("DB_DATABASE_NAME")
         DB_USER_PASSWORD = get_config("DB_TG_USER_PASSWORD")
         DB_DATABASE_HOST = get_config("DB_DATABASE_HOST")
-        print(f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}")
         self.engine = create_engine(
             f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}"
         )
@@ -66,8 +64,10 @@ class TelegramAgent:
         user.subclass = subclass
         self.session.commit()
 
-    def change_teacher(self, telegram_id: int, teacher_name: str) -> None:
+    def change_teacher_name(self, telegram_id: int, teacher_name: str) -> None:
         teacher = self.session.query(TelegramUser).filter_by(telegram_id=telegram_id)
         teacher.teacher_name = teacher_name
         self.session.commit()
     
+    def get_user(self, telegram_id: int) -> User:
+        return User.from_database(self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first())

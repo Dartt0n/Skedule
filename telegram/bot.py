@@ -64,7 +64,7 @@ def main() -> None:
                     callback=handlers.confirm_teacher_name,
                 ),
                 CallbackQueryHandler(
-                    pattern="^"+CallbackEnum.CONFIRM_NAME.value,
+                    pattern="^" + CallbackEnum.CONFIRM_NAME.value,
                     callback=handlers.save_teacher_name,
                 ),
             ],
@@ -95,19 +95,28 @@ def main() -> None:
                     callback=handlers.ask_parallel,
                 ),
                 CallbackQueryHandler(
-                    pattern="^"+CallbackEnum.CONFIRM_SUBCLASS.value,
+                    pattern="^" + CallbackEnum.CONFIRM_SUBCLASS.value,
                     callback=handlers.save_subclass,
                 ),
             ],
             State.MAIN_MENU: [
                 CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.MISC_MENU),
-                    callback=handlers.misc_menu
+                    pattern=pattern(CallbackEnum.MISC_MENU), callback=handlers.misc_menu
                 ),
                 CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.MAIN_MENU),
-                    callback=handlers.main_menu
-                )
+                    pattern=pattern(CallbackEnum.MAIN_MENU), callback=handlers.main_menu
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHECK_TODAY),
+                    callback=handlers.get_timetable_today,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHECK_TOMORROW),
+                    callback=handlers.get_timetable_tomorrow,
+                ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHECK_WEEK), callback=handlers.get_week
+                ),
             ],
         },
         fallbacks=[CommandHandler("start", handlers.startup_handler)],
