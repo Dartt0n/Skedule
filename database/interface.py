@@ -10,7 +10,7 @@ from os import path
 
 
 class Agent:
-    def __init__(self, db_conn: DatabaseConnection=None) -> None:
+    def __init__(self, db_conn: DatabaseConnection = None) -> None:
         """
         Agent is need to access database, encapsulating sqlalchemy methods
         """
@@ -18,7 +18,8 @@ class Agent:
         if db_conn is None:
             properties = Properties()
             with open(
-                path.abspath(path.join(path.dirname(__file__), "..", ".properties")), "rb"
+                path.abspath(path.join(path.dirname(__file__), "..", ".properties")),
+                "rb",
             ) as config:
                 properties.load(config)
 
@@ -29,7 +30,7 @@ class Agent:
             DB_DATABASE_NAME = get_config("DB_DATABASE_NAME")
             DB_USER_PASSWORD = get_config("DB_TG_USER_PASSWORD")
             DB_DATABASE_HOST = get_config("DB_DATABASE_HOST")
-        
+
             self.__engine = create_engine(
                 f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}"
             )

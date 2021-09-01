@@ -74,4 +74,4 @@ for sqlite_lesson_row in all_sqlite_data:
     mariadb_session.add(mariadb_lesson_row)
     mariadb_session.commit()
 
-print('done')
+print("done")

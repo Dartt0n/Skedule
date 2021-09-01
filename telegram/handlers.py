@@ -190,7 +190,6 @@ def save_teacher_name(update: Update, context) -> State.MAIN_MENU:
     return main_menu(update, context)
 
 
-# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- MAIN MENU -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-s
 def misc_menu(update: Update, context) -> State.MAIN_MENU:
     edit_query(
         update,

@@ -1,8 +1,10 @@
 from enum import Enum, unique, auto
 
+
 class AutoName(Enum):
-     def _generate_next_value_(name, start, count, last_values):
-         return name
+    def _generate_next_value_(name, start, count, last_values):
+        return name
+
 
 @unique
 class CallbackEnum(AutoName):
@@ -43,7 +45,7 @@ class CallbackEnum(AutoName):
     FIND_SUBCLASS_WEEK = auto()
     FIND_SUBCLASS_CERTAIN_DAY = auto()
     # find teacher
-    FIND_TEACHER_NOW = auto() 
+    FIND_TEACHER_NOW = auto()
     FIND_TEACHER_NEXT_LESSON = auto()
     FIND_TEACHER_TODAY = auto()
     FIND_TEACHER_WEEK = auto()
@@ -54,9 +56,9 @@ class CallbackEnum(AutoName):
     EXAMPLES = auto()
     FAQ = auto()
 
+
 class State(AutoName):
     MAIN_MENU = auto()
     CHANGE_CLASS = auto()
     CHANGE_NAME = auto()
     LOGIN = auto()
-    

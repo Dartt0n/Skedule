@@ -51,7 +51,9 @@ class TelegramAgent:
         self.session = sessionmaker(bind=self.engine)()
 
     def check_user(self, telegram_id: int) -> bool:
-        user_with_id = self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
+        user_with_id = (
+            self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
+        )
         return user_with_id is not None
 
     def create_new_user(self, **db_params) -> None:
@@ -60,7 +62,9 @@ class TelegramAgent:
         self.session.commit()
 
     def change_subclass(self, telegram_id: int, subclass: str) -> None:
-        user = self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
+        user = (
+            self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
+        )
         user.subclass = subclass
         self.session.commit()
 
@@ -68,6 +72,8 @@ class TelegramAgent:
         teacher = self.session.query(TelegramUser).filter_by(telegram_id=telegram_id)
         teacher.teacher_name = teacher_name
         self.session.commit()
-    
+
     def get_user(self, telegram_id: int) -> User:
-        return User.from_database(self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first())
+        return User.from_database(
+            self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
+        )
