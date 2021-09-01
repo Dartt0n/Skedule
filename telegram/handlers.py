@@ -1,7 +1,7 @@
 from enums import State, CallbackEnum
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from os import path
-from database.telegram import TelegramAgent, to_database_format
+from database.telegram import TelegramAgent
 from database.interface import Agent
 from datetime import datetime
 
@@ -73,7 +73,7 @@ def startup_handler(update: Update, context) -> State:
 def main_menu(update: Update, context) -> State:
     edit_query(
         update,
-        text=get_text("main_menu_text.txt"),
+        text=get_text("main_menu.txt"),
         reply_markup=markup_from(
             [
                 [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
@@ -250,6 +250,102 @@ def misc_menu(update: Update, context) -> State:
                 [("Тех. Помощь", CallbackEnum.HELP)],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+            ]
+        ),
+    )
+    return State.MAIN_MENU
+
+
+def get_timetable_today(update: Update, context) -> State:
+    user = tg_agent.get_user(update.callback_query.message.chat_id)
+    timetable = agent.get_day(user, datetime.today().weekday() + 1)
+
+    # get image
+    text = f"День недели: {timetable.day_of_week}\n"+"\n\n".join(
+        [
+            f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+            for lesson in timetable.lessons
+        ]
+    )
+
+    edit_query(
+        update,
+        text=text,
+        reply_markup=markup_from(
+            [
+                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+                [
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                ],
+                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Неделя", CallbackEnum.CHECK_WEEK)],
+                [("Другое", CallbackEnum.MISC_MENU)],
+            ]
+        ),
+    )
+    return State.MAIN_MENU
+
+
+def get_timetable_tomorrow(update: Update, context) -> State:
+    user = tg_agent.get_user(update.callback_query.message.chat_id)
+    timetable = agent.get_day(user, (datetime.today().weekday() + 1) % 7 + 1)
+
+    # get image
+    text =f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
+        [
+            f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
+            for lesson in timetable.lessons
+        ]
+    )
+
+    edit_query(
+        update,
+        text=text,
+        reply_markup=markup_from(
+            [
+                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+                [
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                ],
+                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Неделя", CallbackEnum.CHECK_WEEK)],
+                [("Другое", CallbackEnum.MISC_MENU)],
+            ]
+        ),
+    )
+    return State.MAIN_MENU
+
+
+def get_week(update: Update, context) -> State:
+    user = tg_agent.get_user(update.callback_query.message.chat_id)
+    week_timetable = agent.get_week(user)
+
+    text = ("\n"+"-"*20+"\n\n\n").join([
+        f"День недели: {timetable.day_of_week}\n"
+        + "\n\n".join(
+            [
+                f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
+                for lesson in timetable.lessons
+            ]
+        )
+        for timetable in week_timetable
+    ])
+
+    edit_query(
+        update,
+        text=text,
+        reply_markup=markup_from(
+            [
+                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+                [
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                ],
+                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Неделя", CallbackEnum.CHECK_WEEK)],
+                [("Другое", CallbackEnum.MISC_MENU)],
             ]
         ),
     )
