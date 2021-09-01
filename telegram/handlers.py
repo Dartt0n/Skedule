@@ -350,3 +350,19 @@ def get_week(update: Update, context) -> State:
         ),
     )
     return State.MAIN_MENU
+
+def select_dayweek(update: Update, context) -> State:
+    edit_query(
+        update,
+        text=get_text("select_dayweek.txt"),
+        reply_markup=markup_from(
+            [
+                [("Понедельник", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_1")],
+                [("Вторник", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_2")],
+                [("Среда", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_3")],
+                [("Четверг", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_4")],
+                [("Пятница", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_5")],
+                [("Суббота", f"{CallbackEnum.SELECT_DAY_OF_WEEK}_6")]
+            ]
+        )
+    )
