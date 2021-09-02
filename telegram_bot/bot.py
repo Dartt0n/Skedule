@@ -115,6 +115,10 @@ def run() -> None:
                     pattern=pattern(CallbackEnum.CHANGE_INFORMATION),
                     callback=handlers.change_info,
                 ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.HELP),
+                    callback=handlers.technical_support
+                )
             ],
         },
         fallbacks=[CommandHandler("start", handlers.startup_handler)],
@@ -124,7 +128,3 @@ def run() -> None:
     # Start the Bot
     updater.start_polling()
     updater.idle()
-
-
-if __name__ == "__main__":
-    run()

@@ -1,10 +1,15 @@
-from database.models import Student
-from telegram_bot.enums import State, CallbackEnum
-from telegram import Update
-from database.telegram import TelegramAgent
-from database.interface import Agent
 from datetime import datetime
-from telegram_bot.support_functions import markup_from, get_text, edit_query
+
+from database.interface import Agent
+from database.models import Student
+from database.telegram import TelegramAgent
+from telegram import Update
+
+from telegram_bot.enums import CallbackEnum, State
+from telegram_bot.support_functions import (edit_query,
+                                            get_current_day_of_week,
+                                            get_telegram_id, get_text,
+                                            markup_from)
 
 TGA = TelegramAgent()
 AGENT = Agent()
@@ -32,6 +37,10 @@ MISC_MENU_TEXT = get_text("misc_menu.txt")
 SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
 HELP_MESSAGE_TEXT = get_text("help_message.txt")
 
+LESSON_TIME = {
+    number: ()
+    for number in range(1, 9)
+}
 
 def startup_handler(update: Update, context) -> State:
     """Greet new user"""
@@ -123,7 +132,7 @@ def confirm_class(update: Update, context) -> State.CHANGE_CLASS:
 
 def save_subclass_to_database(update: Update, context) -> State.CHANGE_CLASS:
     subclass = update.callback_query.data.split("_")[-1]
-    t_id = update.callback_query.message.chat.id
+    t_id = get_telegram_id(update)
     if not TGA.check_user(t_id):
         TGA.create_new_user(telegram_id=t_id, is_student=True, subclass=subclass)
     else:
@@ -152,7 +161,7 @@ def confirm_teacher_name(update: Update, context) -> State.CHANGE_NAME:
 
 def save_teacher_name_to_database(update: Update, context) -> State.MAIN_MENU:
     name = update.callback_query.data.split("_")[-1]
-    t_id = update.callback_query.message.chat.id
+    t_id = get_telegram_id(update)
     if not TGA.check_user(t_id):
         TGA.create_new_user(telegram_id=t_id, is_student=False, teacher_name=name)
     else:
@@ -181,9 +190,21 @@ def misc_menu(update: Update, context) -> State.MAIN_MENU:
     return State.MAIN_MENU
 
 
+def get_next_lesson(update: Update, context) -> State.MAIN_MENU:
+    user = TGA.get_user(get_telegram_id(update))
+    
+    # todo get time for next lesson
+    lesson = AGENT.get_lesson(user, get_current_day_of_week(), )
+    
+    
+    text = f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+    edit_query(update, text=text, reply_markup=MAIN_MENU_MARKUP)
+    return State.MAIN_MENU
+
+
 def get_timetable_today(update: Update, context) -> State.MAIN_MENU:
-    user = TGA.get_user(update.callback_query.message.chat_id)
-    timetable = AGENT.get_day(user, datetime.today().weekday() + 1)
+    user = TGA.get_user(get_telegram_id(update))
+    timetable = AGENT.get_day(user, get_current_day_of_week())
 
     # get image
     text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
@@ -200,8 +221,8 @@ def get_timetable_today(update: Update, context) -> State.MAIN_MENU:
 
 
 def get_timetable_tomorrow(update: Update, context) -> State.MAIN_MENU:
-    user = TGA.get_user(update.callback_query.message.chat_id)
-    timetable = AGENT.get_day(user, (datetime.today().weekday() + 1) % 7 + 1)
+    user = TGA.get_user(get_telegram_id(update))
+    timetable = AGENT.get_day(user, (get_current_day_of_week()) % 7 + 1)
 
     # get image
     text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
@@ -218,7 +239,7 @@ def get_timetable_tomorrow(update: Update, context) -> State.MAIN_MENU:
 
 
 def get_week(update: Update, context) -> State.MAIN_MENU:
-    user = TGA.get_user(update.callback_query.message.chat_id)
+    user = TGA.get_user(get_telegram_id(update))
     week_timetable = AGENT.get_week(user)
 
     text = ("\n" + "-" * 20 + "\n\n\n").join(
@@ -259,7 +280,7 @@ def select_dayweek(update: Update, context) -> State.MAIN_MENU:
 
 
 def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
-    user = TGA.get_user(update.callback_query.message.chat_id)
+    user = TGA.get_user(get_telegram_id(update))
     day_of_week = update.callback_query.data.split("_")[-1]
 
     timetable = AGENT.get_day(user, int(day_of_week))
@@ -279,8 +300,18 @@ def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
 
 
 def change_info(update: Update, context) -> State.CHANGE_CLASS:  # or State.CHANGE_NAME
-    t_id = update.callback_query.message.chat.id
+    t_id = get_telegram_id(update)
     if isinstance(TGA.get_user(t_id), Student):
         return choose_parallel(update, context)
     else:
         return ask_teachers_name(update, context)
+
+
+def technical_support(update: Update, context) -> State.MAIN_MENU:
+    t_id = get_telegram_id(update)
+    edit_query(
+        update,
+        text=HELP_MESSAGE_TEXT.format(telegram_id=t_id),
+        reply_markup=MAIN_MENU_MARKUP,
+    )
+    return State.MAIN_MENU

@@ -1,6 +1,9 @@
-from telegram_bot.enums import CallbackEnum
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from datetime import datetime
 from os import path
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+
+from telegram_bot.enums import CallbackEnum
 
 
 def markup_from(variants) -> InlineKeyboardMarkup:
@@ -29,4 +32,10 @@ def get_text(filename: str) -> str:
 def edit_query(update: Update, *args, **kwargs):
     query = update.callback_query
     query.answer()
-    query.edit_message_text(*args, **kwargs)
+    query.edit_message_text(*args, **kwargs, parse_mode="markdown")
+
+def get_telegram_id(update) -> int:
+    return update.callback_query.message.chat.id
+
+def get_current_day_of_week() -> int:
+    return datetime.today().weekday() + 1
