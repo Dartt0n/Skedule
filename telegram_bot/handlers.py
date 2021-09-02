@@ -20,14 +20,23 @@ MAIN_MENU_MARKUP = markup_from(
         [("Другое", CallbackEnum.MISC_MENU)],
     ]
 )
-
+HELP_ON_STARTUP_TEXT = get_text("help_on_startup.txt")
+MAIN_MENU_TEXT = get_text("main_menu.txt")
+ENTER_PARALLEL_TEXT = get_text("enter_parallel.txt")
+ENTER_LETTER_TEXT = get_text("enter_letter.txt")
+ENTER_SUBCLASS_TEXT = get_text("enter_subclass.txt")
+CONFIRM_CLASS_TEXT = get_text("confirm_class.txt")
+ENTER_NAME_TEXT = get_text("enter_name.txt")
+CONFIRM_NAME_TEXT = get_text("confirm_name.txt")
+MISC_MENU_TEXT = get_text("misc_menu.txt")
+SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
 
 def startup_handler(update: Update, context) -> State:
     """Greet new user"""
     t_id = update.message.chat.id
     if TGA.check_user(t_id):
         update.message.reply_text(
-            text=get_text("help_on_startup.txt"),
+            text=HELP_ON_STARTUP_TEXT,
             reply_markup=MAIN_MENU_MARKUP,
         )
         return State.MAIN_MENU
@@ -37,20 +46,20 @@ def startup_handler(update: Update, context) -> State:
     update.message.reply_text(text=get_text("greeting.txt"), reply_markup=keyboard)
     return State.LOGIN
 
-
-def main_menu(update: Update, context) -> State:
+def main_menu(update: Update, context) -> State:    
     edit_query(
         update,
-        text=get_text("main_menu.txt"),
+        text=MAIN_MENU_TEXT,
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
 
 def choose_parallel(update: Update, context) -> State.CHANGE_CLASS:
+    
     edit_query(
         update,
-        text=get_text("enter_parallel.txt"),
+        text=ENTER_PARALLEL_TEXT,
         reply_markup=markup_from(
             [
                 [("8", "8"), ("9", "9")],
@@ -65,7 +74,7 @@ def choose_letter(update: Update, context) -> State.CHANGE_CLASS:
     parallel = update.callback_query.data
     edit_query(
         update,
-        text=get_text("enter_letter.txt"),
+        text=ENTER_LETTER_TEXT,
         reply_markup=markup_from(
             [
                 [(f"   {letter}   ", parallel + letter) for letter in "абвгде"],
@@ -83,7 +92,7 @@ def choose_group(update: Update, context) -> State.CHANGE_CLASS:
     s_class = update.callback_query.data
     edit_query(
         update,
-        text=get_text("enter_subclass.txt"),
+        text=ENTER_SUBCLASS_TEXT,
         reply_markup=markup_from(
             [
                 [("1", s_class + "1")],
@@ -98,7 +107,7 @@ def confirm_class(update: Update, context) -> State.CHANGE_CLASS:
     subclass = update.callback_query.data
     edit_query(
         update,
-        text=get_text("confirm_class.txt").format(subclass=subclass),
+        text=CONFIRM_CLASS_TEXT.format(subclass=subclass),
         reply_markup=markup_from(
             [
                 [("Да", CallbackEnum.CONFIRM_SUBCLASS.value + f"_{subclass}")],
@@ -120,14 +129,14 @@ def save_subclass_to_database(update: Update, context) -> State.CHANGE_CLASS:
 
 
 def ask_teachers_name(update: Update, context) -> State.CHANGE_NAME:
-    edit_query(update, text=get_text("enter_name.txt"))
+    edit_query(update, text=ENTER_NAME_TEXT)
     return State.CHANGE_NAME
 
 
 def confirm_teacher_name(update: Update, context) -> State.CHANGE_NAME:
     name = update.message.text
     update.message.reply_text(
-        text=get_text("confirm_name.txt").format(teacher_name=name),
+        text=CONFIRM_NAME_TEXT.format(teacher_name=name),
         reply_markup=markup_from(
             [
                 [("Да", CallbackEnum.CONFIRM_NAME.value + f"_{name}")],
@@ -151,7 +160,7 @@ def save_teacher_name_to_database(update: Update, context) -> State.MAIN_MENU:
 def misc_menu(update: Update, context) -> State.MAIN_MENU:
     edit_query(
         update,
-        text=get_text("misc_menu.txt"),
+        text=MISC_MENU_TEXT,
         reply_markup=markup_from(
             [
                 [
@@ -237,7 +246,7 @@ def get_week(update: Update, context) -> State.MAIN_MENU:
 def select_dayweek(update: Update, context) -> State.MAIN_MENU:
     edit_query(
         update,
-        text=get_text("select_dayweek.txt"),
+        text=SELECT_DAYWEEK_TEXT,
         reply_markup=markup_from(
             [
                 [("Понедельник", f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_1")],
