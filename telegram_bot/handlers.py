@@ -1,9 +1,10 @@
-from enums import State, CallbackEnum
+from database.models import Student
+from telegram_bot.enums import State, CallbackEnum
 from telegram import Update
 from database.telegram import TelegramAgent
 from database.interface import Agent
 from datetime import datetime
-from .support_functions import markup_from, get_text, edit_query
+from telegram_bot.support_functions import markup_from, get_text, edit_query
 
 TGA = TelegramAgent()
 AGENT = Agent()
@@ -26,7 +27,7 @@ def startup_handler(update: Update, context) -> State:
     t_id = update.message.chat.id
     if TGA.check_user(t_id):
         update.message.reply_text(
-            text=get_text("main_menu.txt"),
+            text=get_text("help_on_startup.txt"),
             reply_markup=MAIN_MENU_MARKUP,
         )
         return State.MAIN_MENU
@@ -44,43 +45,6 @@ def main_menu(update: Update, context) -> State:
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
-
-
-# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- LOGIN -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-
-def ask_teacher_want_save_name(update: Update, context) -> State.CHANGE_NAME:
-    edit_query(
-        update,
-        text=get_text("save_teacher_name.txt"),
-        reply_markup=markup_from(
-            [
-                [("Да", CallbackEnum.SAVE_NAME)],
-                [("Нет", CallbackEnum.NOT_SAVE_NAME)],
-            ]
-        ),
-    )
-    return State.CHANGE_NAME
-
-
-def ask_student_want_save_class(update: Update, context) -> State.CHANGE_CLASS:
-    edit_query(
-        update,
-        text=get_text("save_student_class.txt"),
-        reply_markup=markup_from(
-            [
-                [("Да", CallbackEnum.SAVE_CLASS)],
-                [("Нет", CallbackEnum.NOT_SAVE_CLASS)],
-            ]
-        ),
-    )
-    return State.CHANGE_CLASS
-
-
-def not_save_subclass(update: Update, context) -> State.MAIN_MENU:
-    t_id = update.callback_query.message.chat.id
-    TGA.create_new_user(telegram_id=t_id, is_student=True)
-    return main_menu(update, context)
 
 
 def choose_parallel(update: Update, context) -> State.CHANGE_CLASS:
@@ -119,7 +83,7 @@ def choose_group(update: Update, context) -> State.CHANGE_CLASS:
     s_class = update.callback_query.data
     edit_query(
         update,
-        text=get_text("enter_letter.txt"),
+        text=get_text("enter_subclass.txt"),
         reply_markup=markup_from(
             [
                 [("1", s_class + "1")],
@@ -160,12 +124,6 @@ def ask_teachers_name(update: Update, context) -> State.CHANGE_NAME:
     return State.CHANGE_NAME
 
 
-def not_save_name(update: Update, context) -> State.CHANGE_NAME:
-    t_id = update.callback_query.message.chat.id
-    TGA.create_new_user(telegram_id=t_id, is_student=False)
-    return main_menu(update, context)
-
-
 def confirm_teacher_name(update: Update, context) -> State.CHANGE_NAME:
     name = update.message.text
     update.message.reply_text(
@@ -180,7 +138,7 @@ def confirm_teacher_name(update: Update, context) -> State.CHANGE_NAME:
     return State.CHANGE_NAME
 
 
-def save_teacher_name(update: Update, context) -> State.MAIN_MENU:
+def save_teacher_name_to_database(update: Update, context) -> State.MAIN_MENU:
     name = update.callback_query.data.split("_")[-1]
     t_id = update.callback_query.message.chat.id
     if not TGA.check_user(t_id):
@@ -314,3 +272,11 @@ def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
+
+
+def change_info(update: Update, context) -> State.CHANGE_CLASS: # or State.CHANGE_NAME
+    t_id = update.callback_query.message.chat.id
+    if isinstance(TGA.get_user(t_id), Student):
+        return choose_parallel(update, context)
+    else:
+        return ask_teachers_name(update, context)

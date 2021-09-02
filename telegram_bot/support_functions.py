@@ -1,4 +1,4 @@
-from enums import CallbackEnum
+from telegram_bot.enums import CallbackEnum
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from os import path
 

@@ -6,8 +6,8 @@ from telegram.ext import (
     MessageHandler,
     Filters,
 )
-from enums import State, CallbackEnum
-import handlers
+from telegram_bot.enums import State, CallbackEnum
+import telegram_bot.handlers as handlers
 from jproperties import Properties
 
 import logging
@@ -22,7 +22,7 @@ def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
 
 
-def main() -> None:
+def run() -> None:
     """Run the bot."""
     properties = Properties()
     with open(".properties", "rb") as config:
@@ -36,26 +36,17 @@ def main() -> None:
             State.LOGIN: [
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.IM_TEACHER),
-                    callback=handlers.ask_teacher_want_save_name,
+                    callback=handlers.ask_teachers_name,
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.IM_STUDENT),
-                    callback=handlers.ask_student_want_save_class,
+                    callback=handlers.choose_parallel,
                 ),
             ],
             State.CHANGE_NAME: [
-                # TEACHER
-                CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.SAVE_NAME),
-                    callback=handlers.ask_teachers_name,
-                ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.CHANGE_NAME),
                     callback=handlers.ask_teachers_name,
-                ),
-                CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.NOT_SAVE_NAME),
-                    callback=handlers.not_save_name,
                 ),
                 MessageHandler(
                     filters=Filters.regex(
@@ -65,15 +56,10 @@ def main() -> None:
                 ),
                 CallbackQueryHandler(
                     pattern="^" + CallbackEnum.CONFIRM_NAME.value,
-                    callback=handlers.save_teacher_name,
+                    callback=handlers.save_teacher_name_to_database,
                 ),
             ],
             State.CHANGE_CLASS: [
-                # STUDENT
-                CallbackQueryHandler(
-                    pattern=pattern(CallbackEnum.NOT_SAVE_CLASS),
-                    callback=handlers.not_save_subclass,
-                ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.SAVE_CLASS),
                     callback=handlers.choose_parallel,
@@ -125,6 +111,10 @@ def main() -> None:
                     pattern=f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]",
                     callback=handlers.get_timetable_for_certain_day,
                 ),
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHANGE_INFORMATION),
+                    callback=handlers.change_info,
+                ),
             ],
         },
         fallbacks=[CommandHandler("start", handlers.startup_handler)],
@@ -137,4 +127,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    run()
