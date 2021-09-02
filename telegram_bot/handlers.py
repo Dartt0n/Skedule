@@ -6,10 +6,13 @@ from database.telegram import TelegramAgent
 from telegram import Update
 
 from telegram_bot.enums import CallbackEnum, State
-from telegram_bot.support_functions import (edit_query,
-                                            get_current_day_of_week,
-                                            get_telegram_id, get_text,
-                                            markup_from)
+from telegram_bot.support_functions import (
+    edit_query,
+    get_current_day_of_week,
+    get_telegram_id,
+    get_text,
+    markup_from,
+)
 
 TGA = TelegramAgent()
 AGENT = Agent()
@@ -37,10 +40,6 @@ MISC_MENU_TEXT = get_text("misc_menu.txt")
 SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
 HELP_MESSAGE_TEXT = get_text("help_message.txt")
 
-LESSON_TIME = {
-    number: ()
-    for number in range(1, 9)
-}
 
 def startup_handler(update: Update, context) -> State:
     """Greet new user"""
@@ -100,7 +99,8 @@ def choose_letter(update: Update, context) -> State.CHANGE_CLASS:
     return State.CHANGE_CLASS
 
 
-def choose_group(update: Update, context) -> State.CHANGE_CLASS:
+
+def choose_group(update: Update, context) -> State:
     s_class = update.callback_query.data
     edit_query(
         update,
@@ -187,17 +187,21 @@ def misc_menu(update: Update, context) -> State.MAIN_MENU:
             ]
         ),
     )
-    return State.MAIN_MENU
+    return State.MISC_MENU
 
 
 def get_next_lesson(update: Update, context) -> State.MAIN_MENU:
     user = TGA.get_user(get_telegram_id(update))
-    
     # todo get time for next lesson
-    lesson = AGENT.get_lesson(user, get_current_day_of_week(), )
-    
-    
-    text = f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+    lesson = AGENT.get_lesson(
+        user,
+        get_current_day_of_week(),
+        lesson_number=-1
+    )
+    if lesson is None:
+        text = "Не удалось найти следующий урок-"
+    else:
+        text = f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
     edit_query(update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
@@ -315,3 +319,5 @@ def technical_support(update: Update, context) -> State.MAIN_MENU:
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
+
+
