@@ -30,6 +30,8 @@ ENTER_NAME_TEXT = get_text("enter_name.txt")
 CONFIRM_NAME_TEXT = get_text("confirm_name.txt")
 MISC_MENU_TEXT = get_text("misc_menu.txt")
 SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
+HELP_MESSAGE_TEXT = get_text("help_message.txt")
+
 
 def startup_handler(update: Update, context) -> State:
     """Greet new user"""
@@ -46,7 +48,8 @@ def startup_handler(update: Update, context) -> State:
     update.message.reply_text(text=get_text("greeting.txt"), reply_markup=keyboard)
     return State.LOGIN
 
-def main_menu(update: Update, context) -> State:    
+
+def main_menu(update: Update, context) -> State:
     edit_query(
         update,
         text=MAIN_MENU_TEXT,
@@ -56,7 +59,7 @@ def main_menu(update: Update, context) -> State:
 
 
 def choose_parallel(update: Update, context) -> State.CHANGE_CLASS:
-    
+
     edit_query(
         update,
         text=ENTER_PARALLEL_TEXT,
@@ -184,10 +187,8 @@ def get_timetable_today(update: Update, context) -> State.MAIN_MENU:
 
     # get image
     text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
-        [
-            f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
-            for lesson in timetable.lessons
-        ]
+        f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+        for lesson in timetable.lessons
     )
 
     edit_query(
@@ -204,10 +205,8 @@ def get_timetable_tomorrow(update: Update, context) -> State.MAIN_MENU:
 
     # get image
     text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
-        [
-            f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
-            for lesson in timetable.lessons
-        ]
+        f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
+        for lesson in timetable.lessons
     )
 
     edit_query(
@@ -223,16 +222,14 @@ def get_week(update: Update, context) -> State.MAIN_MENU:
     week_timetable = AGENT.get_week(user)
 
     text = ("\n" + "-" * 20 + "\n\n\n").join(
-        [
+        (
             f"День недели: {timetable.day_of_week}\n"
             + "\n\n".join(
-                [
-                    f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
-                    for lesson in timetable.lessons
-                ]
+                f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet} {lesson.teacher}"
+                for lesson in timetable.lessons
             )
-            for timetable in week_timetable
-        ]
+        )
+        for timetable in week_timetable
     )
 
     edit_query(
@@ -269,10 +266,8 @@ def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
 
     # get image
     text = f"День недели: {timetable.day_of_week}\n" + "\n\n".join(
-        [
-            f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
-            for lesson in timetable.lessons
-        ]
+        f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+        for lesson in timetable.lessons
     )
 
     edit_query(
@@ -283,7 +278,7 @@ def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
     return State.MAIN_MENU
 
 
-def change_info(update: Update, context) -> State.CHANGE_CLASS: # or State.CHANGE_NAME
+def change_info(update: Update, context) -> State.CHANGE_CLASS:  # or State.CHANGE_NAME
     t_id = update.callback_query.message.chat.id
     if isinstance(TGA.get_user(t_id), Student):
         return choose_parallel(update, context)
