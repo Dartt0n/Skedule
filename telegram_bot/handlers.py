@@ -9,6 +9,7 @@ from telegram_bot.enums import CallbackEnum, State
 from telegram_bot.support_functions import (
     edit_query,
     get_current_day_of_week,
+    get_lesson_number,
     get_telegram_id,
     get_text,
     markup_from,
@@ -192,15 +193,16 @@ def misc_menu(update: Update, context) -> State.MAIN_MENU:
 
 def get_next_lesson(update: Update, context) -> State.MAIN_MENU:
     user = TGA.get_user(get_telegram_id(update))
-    # todo get time for next lesson
-    lesson = AGENT.get_lesson(
-        user,
-        get_current_day_of_week(),
-        lesson_number=-1
-    )
-    if lesson is None:
-        text = "Не удалось найти следующий урок-"
+    lesson_number = get_lesson_number(datetime.now())
+    print(lesson_number, datetime.now())
+    if lesson_number == -1:
+        text = "Не удалось найти следующий урок, возможно стоит опробовать эту функцию в учебное время?"
     else:
+        lesson = AGENT.get_lesson(
+            user,
+            get_current_day_of_week(),
+            lesson_number=lesson_number+1
+        )
         text = f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
     edit_query(update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU

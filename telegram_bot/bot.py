@@ -111,7 +111,10 @@ def run() -> None:
                     pattern=f"{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]",
                     callback=handlers.get_timetable_for_certain_day,
                 ),
-
+                CallbackQueryHandler(
+                    pattern=pattern(CallbackEnum.CHECK_NEXT_LESSON),
+                    callback=handlers.get_next_lesson,
+                ),
             ],
             State.MISC_MENU: [
                 CallbackQueryHandler(
@@ -120,13 +123,11 @@ def run() -> None:
                 ),
                 CallbackQueryHandler(
                     pattern=pattern(CallbackEnum.HELP),
-                    callback=handlers.technical_support
+                    callback=handlers.technical_support,
                 ),
             ],
-            State.FIND_CLASS: [
-            ],
-            State.FIND_TEACHER: [
-            ]
+            State.FIND_CLASS: [],
+            State.FIND_TEACHER: [],
         },
         fallbacks=[CommandHandler("start", handlers.startup_handler)],
     )
