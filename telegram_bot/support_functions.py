@@ -6,6 +6,8 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 from telegram_bot.enums import CallbackEnum
 
+import json 
+
 
 def get_lesson_number(time) -> int:
     """
@@ -44,12 +46,12 @@ def markup_from(variants) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def get_text(filename: str) -> str:
+def get_json(filename: str):
     path_to_file = path.abspath(
         path.join(path.dirname(__file__), "..", "resources", "texts", filename)
     )
-    with open(path_to_file, "r") as text:
-        return text.read()
+    with open(path_to_file, "r") as f:
+        return json.load(f.read())
 
 
 def update_query(update: Update, text: str, reply_markup: InlineKeyboardMarkup):

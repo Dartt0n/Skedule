@@ -12,7 +12,7 @@ from telegram_bot.support_functions import (
     get_current_day_of_week,
     get_lesson_number,
     get_telegram_id,
-    get_text,
+    get_json,
     markup_from,
 )
 
@@ -30,19 +30,10 @@ MAIN_MENU_MARKUP = markup_from(
         [("Другое", CallbackEnum.MISC_MENU)],
     ]
 )
-HELP_ON_STARTUP_TEXT = get_text("help_on_startup.txt")
-MAIN_MENU_TEXT = get_text("main_menu.txt")
-ENTER_PARALLEL_TEXT = get_text("enter_parallel.txt")
-ENTER_LETTER_TEXT = get_text("enter_letter.txt")
-ENTER_SUBCLASS_TEXT = get_text("enter_subclass.txt")
-CONFIRM_CLASS_TEXT = get_text("confirm_class.txt")
-ENTER_NAME_TEXT = get_text("enter_name.txt")
-CONFIRM_NAME_TEXT = get_text("confirm_name.txt")
-MISC_MENU_TEXT = get_text("misc_menu.txt")
-SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
-HELP_MESSAGE_TEXT = get_text("help_message.txt")
-GREETING_TEXT = get_text("greeting.txt")
 
+texts = get_json("texts.json")
+def get_text(text):
+    return texts[text]
 
 def start_command_handler(update: Update, context: CallbackContext) -> State:
     """Greeting new user and helping old users"""
@@ -51,12 +42,12 @@ def start_command_handler(update: Update, context: CallbackContext) -> State:
     if DBTG.check_if_user_exists(telegram_chat_id):
         # user is already registered
         update.message.reply_text(
-            text=HELP_ON_STARTUP_TEXT, reply_markup=MAIN_MENU_MARKUP
+            text=get_text('help_on_startup'), reply_markup=MAIN_MENU_MARKUP
         )
         return State.MAIN_MENU  # return user to main menu
     # user is not registered, ask if user is a teacher or a student
     update.message.reply_text(
-        text=GREETING_TEXT,
+        text=get_text("greeting"),
         reply_markup=markup_from(
             [
                 [("Ученик", CallbackEnum.IM_STUDENT)],  # buttons for students
@@ -71,7 +62,7 @@ def choose_parallel(return_to_state: State) -> Callable:
     def callback_function(update: Update, _context: CallbackContext) -> State:
         update_query(
             update=update,
-            text=ENTER_PARALLEL_TEXT,
+            text=get_text("enter_parallel"),
             # let user enter his current course
             reply_markup=markup_from(
                 [
@@ -98,7 +89,7 @@ def choose_letter(return_to_state: State) -> Callable:
         context.user_data["USER_PARALLEL"] = parallel  # save user data
         update_query(
             update=update,
-            text=ENTER_LETTER_TEXT,
+            text=get_text("enter_letter"),
             reply_markup=markup_from(
                 [
                     [
