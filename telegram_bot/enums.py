@@ -14,6 +14,7 @@ class CallbackEnum(AutoName):
     NOT_SAVE_CLASS = auto()
     PARALLEL = auto()
     LETTER = auto()
+    GROUP = auto()
     CONFIRM_SUBCLASS = auto()
     CHANGE_SUBCLASS = auto()
     # teacher replies
@@ -62,3 +63,5 @@ class State(AutoName):
     LOGIN = auto()
     PARALLEL_ENTERED = auto()
     LETTER_ENTERED = auto()
+    GROUP_ENTERED = auto()
+    CONFIRM_SUBCLASS = auto()
