@@ -43,16 +43,13 @@ def run() -> None:
                     CallbackQueryHandler(
                         # this callback will be called when user press student button while in login state
                         pattern="^{}$".format(CallbackEnum.IM_STUDENT),
-                        callback=handlers.choose_parallel(
-                            return_to_state=State.PARALLEL_ENTERED
-                        ),
+                        callback=handlers.choose_parallel,
                     ),
                 ],
-                State.PARALLEL_ENTERED: [
-                    CallbackQueryHandler(
-                        handlers.choose_letter(return_to_state=State.LETTER_ENTERED)
-                    )
-                ],
+                State.PARALLEL_ENTERED: [CallbackQueryHandler(handlers.choose_letter)],
+                State.LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group)],
+                State.LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group)],
+                
             },
             fallbacks=[],
         )
