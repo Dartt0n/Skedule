@@ -1,5 +1,6 @@
-from datetime import datetime
+# THIS IS DEPRECATED
 
+from datetime import datetime
 from database.interface import Agent
 from database.models import Student
 from database.telegram import TelegramAgent
@@ -7,7 +8,7 @@ from telegram import Update
 
 from telegram_bot.enums import CallbackEnum, State
 from telegram_bot.support_functions import (
-    edit_query,
+    update_query,
     get_current_day_of_week,
     get_lesson_number,
     get_telegram_id,
@@ -45,7 +46,7 @@ HELP_MESSAGE_TEXT = get_text("help_message.txt")
 def startup_handler(update: Update, context) -> State:
     """Greet new user"""
     t_id = update.message.chat.id
-    if TGA.check_user(t_id):
+    if TGA.check_if_user_exists(t_id):
         update.message.reply_text(
             text=HELP_ON_STARTUP_TEXT,
             reply_markup=MAIN_MENU_MARKUP,
@@ -59,7 +60,7 @@ def startup_handler(update: Update, context) -> State:
 
 
 def main_menu(update: Update, context) -> State:
-    edit_query(
+    update_query(
         update,
         text=MAIN_MENU_TEXT,
         reply_markup=MAIN_MENU_MARKUP,
@@ -69,7 +70,7 @@ def main_menu(update: Update, context) -> State:
 
 def choose_parallel(update: Update, context) -> State.CHANGE_CLASS:
 
-    edit_query(
+    update_query(
         update,
         text=ENTER_PARALLEL_TEXT,
         reply_markup=markup_from(
@@ -84,7 +85,7 @@ def choose_parallel(update: Update, context) -> State.CHANGE_CLASS:
 
 def choose_letter(update: Update, context) -> State.CHANGE_CLASS:
     parallel = update.callback_query.data
-    edit_query(
+    update_query(
         update,
         text=ENTER_LETTER_TEXT,
         reply_markup=markup_from(
@@ -103,7 +104,7 @@ def choose_letter(update: Update, context) -> State.CHANGE_CLASS:
 
 def choose_group(update: Update, context) -> State:
     s_class = update.callback_query.data
-    edit_query(
+    update_query(
         update,
         text=ENTER_SUBCLASS_TEXT,
         reply_markup=markup_from(
@@ -118,7 +119,7 @@ def choose_group(update: Update, context) -> State:
 
 def confirm_class(update: Update, context) -> State.CHANGE_CLASS:
     subclass = update.callback_query.data
-    edit_query(
+    update_query(
         update,
         text=CONFIRM_CLASS_TEXT.format(subclass=subclass),
         reply_markup=markup_from(
@@ -134,7 +135,7 @@ def confirm_class(update: Update, context) -> State.CHANGE_CLASS:
 def save_subclass_to_database(update: Update, context) -> State.CHANGE_CLASS:
     subclass = update.callback_query.data.split("_")[-1]
     t_id = get_telegram_id(update)
-    if not TGA.check_user(t_id):
+    if not TGA.check_if_user_exists(t_id):
         TGA.create_new_user(telegram_id=t_id, is_student=True, subclass=subclass)
     else:
         TGA.change_subclass(t_id, subclass)
@@ -142,7 +143,7 @@ def save_subclass_to_database(update: Update, context) -> State.CHANGE_CLASS:
 
 
 def ask_teachers_name(update: Update, context) -> State.CHANGE_NAME:
-    edit_query(update, text=ENTER_NAME_TEXT)
+    update_query(update, text=ENTER_NAME_TEXT)
     return State.CHANGE_NAME
 
 
@@ -163,7 +164,7 @@ def confirm_teacher_name(update: Update, context) -> State.CHANGE_NAME:
 def save_teacher_name_to_database(update: Update, context) -> State.MAIN_MENU:
     name = update.callback_query.data.split("_")[-1]
     t_id = get_telegram_id(update)
-    if not TGA.check_user(t_id):
+    if not TGA.check_if_user_exists(t_id):
         TGA.create_new_user(telegram_id=t_id, is_student=False, teacher_name=name)
     else:
         TGA.change_teacher_name(t_id, name)
@@ -171,7 +172,7 @@ def save_teacher_name_to_database(update: Update, context) -> State.MAIN_MENU:
 
 
 def misc_menu(update: Update, context) -> State.MAIN_MENU:
-    edit_query(
+    update_query(
         update,
         text=MISC_MENU_TEXT,
         reply_markup=markup_from(
@@ -194,7 +195,6 @@ def misc_menu(update: Update, context) -> State.MAIN_MENU:
 def get_next_lesson(update: Update, context) -> State.MAIN_MENU:
     user = TGA.get_user(get_telegram_id(update))
     lesson_number = get_lesson_number(datetime.now())
-    print(lesson_number, datetime.now())
     if lesson_number == -1:
         text = "Не удалось найти следующий урок, возможно стоит опробовать эту функцию в учебное время?"
     else:
@@ -203,8 +203,11 @@ def get_next_lesson(update: Update, context) -> State.MAIN_MENU:
             get_current_day_of_week(),
             lesson_number=lesson_number+1
         )
-        text = f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
-    edit_query(update, text=text, reply_markup=MAIN_MENU_MARKUP)
+        if not lesson:
+            text = "Не удалось найти следующий урок, возможно стоит опробовать эту функцию в учебное время?"
+        else:
+            text = f"{lesson.lesson_number}:{lesson.subject}\n{lesson.cabinet}{lesson.teacher}"
+    update_query(update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
 
@@ -218,7 +221,7 @@ def get_timetable_today(update: Update, context) -> State.MAIN_MENU:
         for lesson in timetable.lessons
     )
 
-    edit_query(
+    update_query(
         update,
         text=text,
         reply_markup=MAIN_MENU_MARKUP,
@@ -236,7 +239,7 @@ def get_timetable_tomorrow(update: Update, context) -> State.MAIN_MENU:
         for lesson in timetable.lessons
     )
 
-    edit_query(
+    update_query(
         update,
         text=text,
         reply_markup=MAIN_MENU_MARKUP,
@@ -259,7 +262,7 @@ def get_week(update: Update, context) -> State.MAIN_MENU:
         for timetable in week_timetable
     )
 
-    edit_query(
+    update_query(
         update,
         text=text,
         reply_markup=MAIN_MENU_MARKUP,
@@ -268,7 +271,7 @@ def get_week(update: Update, context) -> State.MAIN_MENU:
 
 
 def select_dayweek(update: Update, context) -> State.MAIN_MENU:
-    edit_query(
+    update_query(
         update,
         text=SELECT_DAYWEEK_TEXT,
         reply_markup=markup_from(
@@ -297,7 +300,7 @@ def get_timetable_for_certain_day(update: Update, context) -> State.MAIN_MENU:
         for lesson in timetable.lessons
     )
 
-    edit_query(
+    update_query(
         update,
         text=text,
         reply_markup=MAIN_MENU_MARKUP,
@@ -315,7 +318,7 @@ def change_info(update: Update, context) -> State.CHANGE_CLASS:  # or State.CHAN
 
 def technical_support(update: Update, context) -> State.MAIN_MENU:
     t_id = get_telegram_id(update)
-    edit_query(
+    update_query(
         update,
         text=HELP_MESSAGE_TEXT.format(telegram_id=t_id),
         reply_markup=MAIN_MENU_MARKUP,

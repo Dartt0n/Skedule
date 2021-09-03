@@ -50,7 +50,7 @@ class TelegramAgent:
         )
         self.session = sessionmaker(bind=self.engine)()
 
-    def check_user(self, telegram_id: int) -> bool:
+    def check_if_user_exists(self, telegram_id: int) -> bool:
         user_with_id = (
             self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
         )

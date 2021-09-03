@@ -59,9 +59,6 @@ class CallbackEnum(AutoName):
 
 class State(AutoName):
     MAIN_MENU = auto()
-    MISC_MENU = auto()
-    CHANGE_CLASS = auto()
-    CHANGE_NAME = auto()
     LOGIN = auto()
-    FIND_CLASS = auto()
-    FIND_TEACHER = auto()
+    PARALLEL_ENTERED = auto()
+    LETTER_ENTERED = auto()

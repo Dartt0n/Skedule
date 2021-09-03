@@ -53,10 +53,10 @@ def get_text(filename: str) -> str:
         return text.read()
 
 
-def edit_query(update: Update, *args, **kwargs):
+def update_query(update: Update, text: str, reply_markup: InlineKeyboardMarkup):
     query = update.callback_query
     query.answer()
-    query.edit_message_text(*args, **kwargs, parse_mode="markdown")
+    query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode="markdown")
 
 
 def get_telegram_id(update) -> int:
