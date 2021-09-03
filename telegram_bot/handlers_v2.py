@@ -43,6 +43,7 @@ SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
 HELP_MESSAGE_TEXT = get_text("help_message.txt")
 GREETING_TEXT = get_text("greeting.txt")
 
+
 def main_menu(update: Update, context) -> State:
     update_query(
         update=update,
@@ -50,6 +51,7 @@ def main_menu(update: Update, context) -> State:
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
+
 
 def start_command_handler(update: Update, context: CallbackContext) -> State:
     """Greeting new user and helping old users"""
@@ -167,4 +169,41 @@ def save_subclass_to_database(update: Update, context: CallbackContext) -> State
         # this is old user, update row
         DBTG.change_subclass(telegram_id=telegram_id, subclass=subclass)
     # return main menu
+    return main_menu(update, context)
+
+
+def ask_teacher_name(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update,
+        text=ENTER_NAME_TEXT,
+    )
+    context.user_data["CALLBACK_MESSAGE"] = update.callback_query
+    return State.NAME_ENTERED
+
+
+def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
+    name = update.message.text
+    context.user_data["USER_NAME"] = name
+
+    update.message.delete()
+    context.user_data.pop("CALLBACK_MESSAGE").edit_message_text(
+        text=CONFIRM_NAME_TEXT.format(teacher_name=name),
+        reply_markup=markup_from(
+            [
+                [("Да, все верно", CallbackEnum.CONFIRM_NAME)],
+                [("Нет, я хочу изменить", CallbackEnum.CHANGE_NAME)],
+            ]
+        ),
+    )
+    return State.CONFIRM_NAME
+
+def save_teacher_name_to_database(update: Update, context: CallbackContext) -> State:
+    name = context.user_data["USER_NAME"]
+    telegram_id = get_telegram_id(update)
+    if not DBTG.check_if_user_exists(telegram_id):
+        # new teacher
+        DBTG.create_new_user(telegram_id=telegram_id, is_student=False, teacher_name=name)
+    else:
+        # old user
+        DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
     return main_menu(update, context)

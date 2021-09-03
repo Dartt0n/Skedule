@@ -52,7 +52,7 @@ def get_text(filename: str) -> str:
         return text.read()
 
 
-def update_query(update: Update, text: str, reply_markup: InlineKeyboardMarkup):
+def update_query(update: Update, text: str, reply_markup: InlineKeyboardMarkup =None):
     query = update.callback_query
     query.answer()
     query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode="markdown")
