@@ -43,6 +43,13 @@ SELECT_DAYWEEK_TEXT = get_text("select_dayweek.txt")
 HELP_MESSAGE_TEXT = get_text("help_message.txt")
 GREETING_TEXT = get_text("greeting.txt")
 
+def main_menu(update: Update, context) -> State:
+    update_query(
+        update=update,
+        text=MAIN_MENU_TEXT,
+        reply_markup=MAIN_MENU_MARKUP,
+    )
+    return State.MAIN_MENU
 
 def start_command_handler(update: Update, context: CallbackContext) -> State:
     """Greeting new user and helping old users"""
@@ -88,7 +95,6 @@ def choose_parallel(update: Update, context: CallbackContext) -> State:
     return State.PARALLEL_ENTERED
 
 
-
 def choose_letter(update: Update, context: CallbackContext) -> State:
     # scrap data from callback_data
     parallel = update.callback_query.data.split("_")[-1]
@@ -108,6 +114,7 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
     )
     return State.LETTER_ENTERED
 
+
 def choose_group(update: Update, context: CallbackContext) -> State:
     letter = update.callback_query.data.split("_")[-1]
     context.user_data["USER_LETTER"] = letter
@@ -118,9 +125,46 @@ def choose_group(update: Update, context: CallbackContext) -> State:
         reply_markup=markup_from(
             [
                 [("1ая группа", "{}_1".format(CallbackEnum.GROUP))],
-                [("2ая группа", "{}_2".format(CallbackEnum.GROUP))]
+                [("2ая группа", "{}_2".format(CallbackEnum.GROUP))],
             ]
-        )
+        ),
     )
     return State.GROUP_ENTERED
 
+
+def confirm_subclass(update: Update, context: CallbackContext) -> State:
+    group = update.callback_query.data.split("_")[-1]
+    context.user_data["USER_GROUP"] = group
+
+    subclass = (
+        context.user_data["USER_PARALLEL"]
+        + context.user_data["USER_LETTER"]
+        + context.user_data["USER_GROUP"]
+    )
+    context.user_data["SUBCLASS"] = subclass
+    update_query(
+        update=update,
+        text=CONFIRM_CLASS_TEXT.format(subclass=subclass),
+        reply_markup=markup_from(
+            [
+                [("Да, верно", CallbackEnum.CONFIRM_SUBCLASS)],
+                [("Нет, я хочу изменить", CallbackEnum.CHANGE_SUBCLASS)],
+            ]
+        ),
+    )
+    return State.CONFIRM_SUBCLASS
+
+
+def save_subclass_to_database(update: Update, context: CallbackContext) -> State:
+    subclass = context.user_data["SUBCLASS"]
+    telegram_id = get_telegram_id(update)
+    if not DBTG.check_if_user_exists(telegram_id):
+        # this is new user, so we create new row in database
+        DBTG.create_new_user(
+            telegram_id=telegram_id, is_student=True, subclass=subclass
+        )
+    else:
+        # this is old user, update row
+        DBTG.change_subclass(telegram_id=telegram_id, subclass=subclass)
+    # return main menu
+    return main_menu(update, context)

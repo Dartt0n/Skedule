@@ -5,6 +5,7 @@ from telegram.ext import (
     ConversationHandler,
     MessageHandler,
     Filters,
+    handler,
 )
 from telegram_bot.enums import State, CallbackEnum
 import telegram_bot.handlers_v2 as handlers
@@ -37,19 +38,32 @@ def run() -> None:
                 State.LOGIN: [
                     CallbackQueryHandler(
                         # this callback will be called when user press teacher button while in login state
-                        pattern="^{}$".format(CallbackEnum.IM_TEACHER),
+                        pattern=pattern(CallbackEnum.IM_TEACHER),
                         callback=None,  # TODO create function for teachers
                     ),
                     CallbackQueryHandler(
                         # this callback will be called when user press student button while in login state
-                        pattern="^{}$".format(CallbackEnum.IM_STUDENT),
+                        pattern=pattern(CallbackEnum.IM_STUDENT),
                         callback=handlers.choose_parallel,
                     ),
                 ],
                 State.PARALLEL_ENTERED: [CallbackQueryHandler(handlers.choose_letter)],
                 State.LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group)],
                 State.LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group)],
-                
+                State.GROUP_ENTERED: [CallbackQueryHandler(handlers.confirm_subclass)],
+                State.CONFIRM_SUBCLASS: [
+                    CallbackQueryHandler(
+                        pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS),
+                        callback=handlers.save_subclass_to_database,
+                    ),
+                    CallbackQueryHandler(
+                        # if user want to change class send him to queue again
+                        pattern=pattern(CallbackEnum.CHANGE_SUBCLASS),
+                        callback=lambda update, context: handlers.choose_parallel(
+                            update, context
+                        ),
+                    ),
+                ],
             },
             fallbacks=[],
         )

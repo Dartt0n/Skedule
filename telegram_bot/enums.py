@@ -64,3 +64,4 @@ class State(AutoName):
     PARALLEL_ENTERED = auto()
     LETTER_ENTERED = auto()
     GROUP_ENTERED = auto()
+    CONFIRM_SUBCLASS = auto()
