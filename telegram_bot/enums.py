@@ -65,3 +65,5 @@ class State(AutoName):
     LETTER_ENTERED = auto()
     GROUP_ENTERED = auto()
     CONFIRM_SUBCLASS = auto()
+    NAME_ENTERED = auto()
+    CONFIRM_NAME = auto()

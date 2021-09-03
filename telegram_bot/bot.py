@@ -39,7 +39,7 @@ def run() -> None:
                     CallbackQueryHandler(
                         # this callback will be called when user press teacher button while in login state
                         pattern=pattern(CallbackEnum.IM_TEACHER),
-                        callback=None,  # TODO create function for teachers
+                        callback=handlers.ask_teacher_name,
                     ),
                     CallbackQueryHandler(
                         # this callback will be called when user press student button while in login state
@@ -60,6 +60,21 @@ def run() -> None:
                         # if user want to change class send him to queue again
                         pattern=pattern(CallbackEnum.CHANGE_SUBCLASS),
                         callback=lambda update, context: handlers.choose_parallel(
+                            update, context
+                        ),
+                    ),
+                ],
+                State.NAME_ENTERED: [
+                    MessageHandler(Filters.text, handlers.confirm_teacher_name)
+                ],
+                State.CONFIRM_NAME: [
+                    CallbackQueryHandler(
+                        pattern=pattern(CallbackEnum.CONFIRM_NAME),
+                        callback=handlers.save_teacher_name_to_database,
+                    ),
+                    CallbackQueryHandler(
+                        pattern=pattern(CallbackEnum.CHANGE_NAME),
+                        callback=lambda update, context: handlers.ask_teacher_name(
                             update, context
                         ),
                     ),
