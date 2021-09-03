@@ -7,11 +7,10 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram_bot.enums import CallbackEnum
 
 
-def get_lesson_number(time):
+def get_lesson_number(time) -> int:
     """
-    Return tuple where first value is type(lesson or break)
-    second value is number of lesson or break
-    if time not in timetable return break 0
+    Return number of lesson (include break after that)
+    if time not in study time return -1
     """
     # TODO make import from table or something
     lessons_ranges = [
