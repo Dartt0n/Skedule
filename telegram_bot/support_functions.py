@@ -51,7 +51,7 @@ def get_json(filename: str):
         path.join(path.dirname(__file__), "..", "resources", "texts", filename)
     )
     with open(path_to_file, "r") as f:
-        return json.load(f.read())
+        return json.loads(f.read())
 
 
 def update_query(update: Update, text: str, reply_markup: InlineKeyboardMarkup =None):

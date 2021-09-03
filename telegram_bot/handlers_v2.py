@@ -40,7 +40,7 @@ def get_text(text):
 def main_menu(update: Update, context) -> State:
     update_query(
         update=update,
-        text=MAIN_MENU_TEXT,
+        text=get_text("main_menu"),
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
@@ -116,7 +116,7 @@ def choose_group(update: Update, context: CallbackContext) -> State:
 
     update_query(
         update=update,
-        text=ENTER_GROUP_TEXT,
+        text=get_text("enter_subclass"),
         reply_markup=markup_from(
             [
                 [("1ая группа", "{}_1".format(CallbackEnum.GROUP))],
@@ -139,7 +139,7 @@ def confirm_subclass(update: Update, context: CallbackContext) -> State:
     context.user_data["SUBCLASS"] = subclass
     update_query(
         update=update,
-        text=CONFIRM_CLASS_TEXT.format(subclass=subclass),
+        text=get_text("confirm_class").format(subclass=subclass),
         reply_markup=markup_from(
             [
                 [("Да, верно", CallbackEnum.CONFIRM_SUBCLASS)],
@@ -168,7 +168,7 @@ def save_subclass_to_database(update: Update, context: CallbackContext) -> State
 def ask_teacher_name(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
-        text=ENTER_NAME_TEXT,
+        text=get_text("enter_name"),
     )
     context.user_data["CALLBACK_MESSAGE"] = update.callback_query
     return State.NAME_ENTERED
@@ -180,7 +180,7 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
 
     update.message.delete()
     context.user_data.pop("CALLBACK_MESSAGE").edit_message_text(
-        text=CONFIRM_NAME_TEXT.format(teacher_name=name),
+        text=get_text("confirm_name").format(teacher_name=name),
         reply_markup=markup_from(
             [
                 [("Да, все верно", CallbackEnum.CONFIRM_NAME)],
