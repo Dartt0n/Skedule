@@ -490,7 +490,7 @@ def announcements_handler(update: Update, context: CallbackContext) -> State:
 def helpful_materials(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
-        text=get_text("helpful_material"),
+        text=get_text("helpful_materials"),
         reply_markup=markup_from(
             [
                 [("Расписание звонков", CallbackEnum.RINGS)],
