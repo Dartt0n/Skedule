@@ -18,21 +18,21 @@ def get_lesson_number(time) -> int:
 
     Returns:
         int: lesson number or -1 if not found
-    """    
+    """
     # """
-    
+
     # """
     # TODO make import from table or something
     lessons_ranges = [
-        DateTimeRange("8:15", "9:00"), # 0 
-        DateTimeRange("9:00", "9:50"), # 1
-        DateTimeRange("9:50", "10:45"), # 2
-        DateTimeRange("10:45", "11:40"), # 3
-        DateTimeRange("11:40", "12:40"), # 4
-        DateTimeRange("12:40", "13:40"), # 5
-        DateTimeRange("13:40", "14:40"), # 6
-        DateTimeRange("14:40", "15:30"), # 7
-        DateTimeRange("15:30", "16:10"), # 8
+        DateTimeRange("8:15", "9:00"),  # 0
+        DateTimeRange("9:00", "9:50"),  # 1
+        DateTimeRange("9:50", "10:45"),  # 2
+        DateTimeRange("10:45", "11:40"),  # 3
+        DateTimeRange("11:40", "12:40"),  # 4
+        DateTimeRange("12:40", "13:40"),  # 5
+        DateTimeRange("13:40", "14:40"),  # 6
+        DateTimeRange("14:40", "15:30"),  # 7
+        DateTimeRange("15:30", "16:10"),  # 8
     ]
     for i, lesson in enumerate(lessons_ranges):
         if time in lesson:
@@ -58,7 +58,7 @@ def markup_from(variants) -> InlineKeyboardMarkup:
 
     Returns:
         InlineKeyboardMarkup: keyboard markup for message
-    """    
+    """
     keyboard = []
     for row in variants:
         keyboard.append([])
@@ -81,7 +81,7 @@ def get_json(filename: str) -> Dict:
 
     Returns:
         Dict: python dict generated from json
-    """    
+    """
     path_to_file = path.abspath(
         path.join(path.dirname(__file__), "..", "resources", filename)
     )

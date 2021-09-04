@@ -60,7 +60,7 @@ with open("/home/dartt0n/Downloads/blka/timetable 1 korp.csv") as file:
         for lesson in lessons:
             print(lesson)
             weekday, lesson_number, subclass, cabinet, subject, teacher = map(
-                lambda x: x.strip(), lesson.split('~')
+                lambda x: x.strip(), lesson.split("~")
             )
             weekday = weekdays[weekday]
 
