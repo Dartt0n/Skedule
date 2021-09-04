@@ -41,10 +41,10 @@ def get_text(text):
     return texts[text]
 
 
-def main_menu(update: Update, context) -> State:
+def main_menu(update: Update, context, first_time=False) -> State:
     update_query(
         update=update,
-        text=get_text("main_menu"),
+        text=get_text("main_menu") if not first_time else get_text("main_menu_first"),
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
@@ -166,7 +166,7 @@ def save_subclass_to_database(update: Update, context: CallbackContext) -> State
         # this is old user, update row
         DBTG.change_subclass(telegram_id=telegram_id, subclass=subclass)
     # return main menu
-    return main_menu(update, context)
+    return main_menu(update, context, True)
 
 
 def ask_teacher_name(update: Update, context: CallbackContext) -> State:
@@ -206,7 +206,7 @@ def save_teacher_name_to_database(update: Update, context: CallbackContext) -> S
     else:
         # old user
         DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
-    return main_menu(update, context)
+    return main_menu(update, context, True)
 
 
 def get_next_lesson(update: Update, context: CallbackContext) -> State:
