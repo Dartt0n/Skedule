@@ -2,6 +2,7 @@
 name = "skedule"
 version = "0.2.0"
 description = ""
+authors = []
 
 [tool.poetry.dependencies]
 python = "^3.9"
