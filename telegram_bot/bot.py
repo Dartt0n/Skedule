@@ -79,6 +79,7 @@ def run() -> None:
                         ),
                     ),
                 ],
+                State.MAIN_MENU: [CallbackQueryHandler(handlers.main_menu_distributor)],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )

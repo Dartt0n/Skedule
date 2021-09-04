@@ -208,7 +208,6 @@ def save_teacher_name_to_database(update: Update, context: CallbackContext) -> S
         DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
     return main_menu(update, context)
 
-
 def get_next_lesson(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     lesson_number = get_lesson_number(datetime.now())  # current lesson
@@ -217,6 +216,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
         timetable = AGENT.get_day(user, day_of_week)
         if timetable.lessons:  # there are some lessons today
             for lesson_t in timetable.lessons:
+                print(timetable.lessons)
                 if lesson_t.lesson_number > lesson_number:  # search first after current
                     lesson = lesson_t  # found lesson
                     return send_lesson(update, lesson)
@@ -236,24 +236,78 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
         text = get_text("can_not_find_next_lesson")
     else:  # there is some lessons
         lesson = timetable.lessons[0]
-        text = get_text("find_next_lesson").format(
-            lesson_number=lesson.lesson_number,
-            subject=lesson.subject,
-            cabinet=lesson.cabinet,
-            teacher=lesson.teacher,
-        )
+        send_lesson(update, lesson)
 
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
+
 def send_lesson(update, lesson):
-    text = get_text("find_next_lesson").format(
+    text = get_text("lesson_format").format(
         lesson_number=lesson.lesson_number,
         subject=lesson.subject,
         cabinet=lesson.cabinet,
         teacher=lesson.teacher,
     )
+    update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
+    return State.MAIN_MENU
+
+
+def get_timetable_today(update: Update, context: CallbackContext) -> State:
+    user = DBTG.get_user(get_telegram_id(update))
+    timetable = AGENT.get_day(user, get_current_day_of_week())
+
+    if not timetable.lessons:
+        update_query(
+            update=update,
+            text=get_text("no_lessons_today"),
+            reply_markup=MAIN_MENU_MARKUP,
+        )
+        return State.MAIN_MENU
+
+    # TODO CHANGE FORMAT FOR TEACHER
     update_query(
-        update=update, text=text, reply_markup=MAIN_MENU_MARKUP
+        update=update,
+        text=get_text("today_timetable").format(
+            lessons="\n\n".join(
+                get_text("lesson_format").format(
+                    lesson_number=lesson.lesson_number,
+                    subject=lesson.subject,
+                    cabinet=lesson.cabinet,
+                    teacher=lesson.teacher,
+                )
+                for lesson in timetable.lessons
+            )
+        ),
+        reply_markup=MAIN_MENU_MARKUP
     )
     return State.MAIN_MENU
+
+def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
+    return State.MAIN_MENU
+
+def get_timetable_certain_day(update: Update, context: CallbackContext) -> State:
+    return State.MAIN_MENU
+
+def get_timetable_week(update: Update, context: CallbackContext) -> State:
+    return State.MAIN_MENU
+
+def misc_menu(update: Update, context: CallbackContext) -> State:
+    return State.MAIN_MENU
+
+def main_menu_distributor(update: Update, context: CallbackContext):
+    event = CallbackEnum(update.callback_query.data)
+    if event == CallbackEnum.CHECK_NEXT_LESSON:
+        return get_next_lesson(update, context)
+    elif event == CallbackEnum.CHECK_TODAY:
+        return get_timetable_today(update, context)
+    elif event == CallbackEnum.CHECK_TOMORROW:
+        return get_timetable_tommorow(update, context)
+    elif event == CallbackEnum.CHECK_CERTAIN_DAY:
+        return get_timetable_certain_day(update, context)
+    elif event == CallbackEnum.CHECK_WEEK:
+        return get_timetable_week(update, context)
+    elif event == CallbackEnum.MISC_MENU:
+        return misc_menu(update, context)
+    else:
+        return State.MAIN_MENU
