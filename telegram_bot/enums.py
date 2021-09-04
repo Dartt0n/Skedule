@@ -56,12 +56,15 @@ class CallbackEnum(AutoName):
     TUTORIALS = auto()
     EXAMPLES = auto()
     FAQ = auto()
+    CARTEEN = auto()
+    RINGS = auto()
 
 
 class State(AutoName):
     MAIN_MENU = auto()
     LOGIN = auto()
     MISC_MENU = auto()
+    HELP_MENU = auto()
     PARALLEL_ENTERED = auto()
     LETTER_ENTERED = auto()
     GROUP_ENTERED = auto()

@@ -84,6 +84,7 @@ def run() -> None:
                 State.SELECT_DAY_OF_WEEK: [
                     CallbackQueryHandler(handlers.get_timetable_certain_day)
                 ],
+                State.HELP_MENU: [CallbackQueryHandler(handlers.help_menu_distributor)],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )

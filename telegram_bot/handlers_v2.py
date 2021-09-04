@@ -458,7 +458,10 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
                 ],
                 [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
                 [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
-                [("Тех. Помощь", CallbackEnum.HELP)],
+                [("Туториалы", CallbackEnum.TUTORIALS)],
+                [
+                    ("Тех. Помощь", CallbackEnum.HELP)
+                ],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
             ]
@@ -480,14 +483,45 @@ def announcements(update: Update, context: CallbackContext) -> State:
 
 
 def helpful_materials(update: Update, context: CallbackContext) -> State:
-    return State.MISC_MENU
+    update_query(
+        update=update,
+        text=get_text("helpful_material"),
+        reply_markup=markup_from(
+            [
+                [("Расписание звонков", CallbackEnum.RINGS)],
+                [("Расписание столовой", CallbackEnum.CARTEEN)],
+            ]
+        ),
+    )
+    return State.HELP_MENU
+
+
+def tutorials(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update, text=get_text("tutorials"), reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU
+
+
+def rings(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update, text=get_text("rings_timetable"), reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU
+
+
+def canteen(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update, text=get_text("canteen_timetable"), reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU
 
 
 def technical_support(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
         text=get_text("help_message").format(telegram_id=get_telegram_id(update)),
-        reply_markup=MAIN_MENU_MARKUP
+        reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
@@ -522,7 +556,18 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
         return helpful_materials(update, context)
     elif event == CallbackEnum.HELP:
         return technical_support(update, context)
+    elif event == CallbackEnum.TUTORIALS:
+        return tutorials(update, context)
     elif event == CallbackEnum.MAIN_MENU:
         return main_menu(update, context)
     else:
-        return State.MAIN_MENU
+        return State.MISC_MENU
+
+
+def help_menu_distributor(update: Update, context: CallbackContext):
+    event = CallbackEnum(update.callback_query.data)
+    if event == CallbackEnum.CARTEEN:
+        return canteen(update, context)
+    elif event == CallbackEnum.RINGS:
+        return rings(update, context)
+    return State.HELP_MENU
