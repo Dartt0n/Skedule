@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Callable
 
+from datetimerange import DateTimeRange
+
 from database.interface import Agent
 from database.models import Student
 from database.telegram import TelegramAgent
@@ -33,6 +35,8 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
+
+
 def get_text(text):
     return texts[text]
 
@@ -53,7 +57,7 @@ def start_command_handler(update: Update, context: CallbackContext) -> State:
     if DBTG.check_if_user_exists(telegram_chat_id):
         # user is already registered
         update.message.reply_text(
-            text=get_text('help_on_startup'), reply_markup=MAIN_MENU_MARKUP
+            text=get_text("help_on_startup"), reply_markup=MAIN_MENU_MARKUP
         )
         return State.MAIN_MENU  # return user to main menu
     # user is not registered, ask if user is a teacher or a student
@@ -190,13 +194,66 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     )
     return State.CONFIRM_NAME
 
+
 def save_teacher_name_to_database(update: Update, context: CallbackContext) -> State:
     name = context.user_data["USER_NAME"]
     telegram_id = get_telegram_id(update)
     if not DBTG.check_if_user_exists(telegram_id):
         # new teacher
-        DBTG.create_new_user(telegram_id=telegram_id, is_student=False, teacher_name=name)
+        DBTG.create_new_user(
+            telegram_id=telegram_id, is_student=False, teacher_name=name
+        )
     else:
         # old user
         DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
     return main_menu(update, context)
+
+
+def get_next_lesson(update: Update, context: CallbackContext) -> State:
+    user = DBTG.get_user(get_telegram_id(update))
+    lesson_number = get_lesson_number(datetime.now())  # current lesson
+    day_of_week = get_current_day_of_week()
+    if lesson_number != -1:  # find lesson
+        timetable = AGENT.get_day(user, day_of_week)
+        if timetable.lessons:  # there are some lessons today
+            for lesson_t in timetable.lessons:
+                if lesson_t.lesson_number > lesson_number:  # search first after current
+                    lesson = lesson_t  # found lesson
+                    return send_lesson(update, lesson)
+    elif datetime.now() in DateTimeRange("0:00", "8:14"):  # early morning
+        timetable = AGENT.get_day(user, day_of_week)  # today
+    else:  # afer lessons
+        timetable = AGENT.get_day(user, day_of_week + 1)  # next day
+
+    if not timetable.lessons:
+        if day_of_week in [6, 7]:  # saturday without lesson or sunday
+            day_of_week = 1
+            timetable = AGENT.get_day(user, day_of_week)  # timetable for monday
+            if timetable.lessons:
+                lesson = timetable.lessons[0]
+                return send_lesson(update, lesson)
+        # wrong parameters
+        text = get_text("can_not_find_next_lesson")
+    else:  # there is some lessons
+        lesson = timetable.lessons[0]
+        text = get_text("find_next_lesson").format(
+            lesson_number=lesson.lesson_number,
+            subject=lesson.subject,
+            cabinet=lesson.cabinet,
+            teacher=lesson.teacher,
+        )
+
+    update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
+    return State.MAIN_MENU
+
+def send_lesson(update, lesson):
+    text = get_text("find_next_lesson").format(
+        lesson_number=lesson.lesson_number,
+        subject=lesson.subject,
+        cabinet=lesson.cabinet,
+        teacher=lesson.teacher,
+    )
+    update_query(
+        update=update, text=text, reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU

@@ -87,7 +87,7 @@ class Agent:
         return TableDay(
             day_of_week=day_of_week,
             lessons=[
-                TableLesson.from_database(table_row) for table_row in all_daily_data
+                sorted([TableLesson.from_database(table_row) for table_row in all_daily_data], key=lambda x: x.lesson_number)
             ],
         )
 
