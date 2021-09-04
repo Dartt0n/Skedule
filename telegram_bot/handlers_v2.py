@@ -35,7 +35,7 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
-
+announcements = get_json("announcements.json")["data"]
 
 def get_text(text):
     return texts[text]
@@ -219,7 +219,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
             for i, lesson_t in enumerate(timetable.lessons):
                 if lesson_t.lesson_number > lesson_number:  # search first after current
                     lesson = lesson_t  # found lesson
-                    check_group(timetable, i, lesson)
+                    #check_group(timetable, i, lesson)
                     return send_lesson(update, user, lesson, day_of_week)
             else:
                 timetable = AGENT.get_day(user, day_of_week + 1)
@@ -234,13 +234,13 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
             timetable = AGENT.get_day(user, day_of_week)  # timetable for monday
             if timetable.lessons:
                 lesson = timetable.lessons[0]
-                check_group(timetable, 1, lesson)
+                #check_group(timetable, 1, lesson)
                 return send_lesson(update, user, lesson, day_of_week)
         # wrong parameters
         text = get_text("can_not_find_next_lesson")
     else:  # there is some lessons
         lesson = timetable.lessons[0]
-        check_group(timetable, 1, lesson)
+        #check_group(timetable, 1, lesson)
         send_lesson(update, user, lesson, day_of_week)
 
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
@@ -276,7 +276,7 @@ def send_lesson(update, user, lesson, day_of_week):
             lesson_number=lesson.lesson_number,
             subject=lesson.subject,
             cabinet=lesson.cabinet,
-            misc_info=lesson.teacher if user is Student else lesson.subclass,
+            misc_info=lesson.teacher if isinstance(user, Student) else lesson.subclass,
         )
     )
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
@@ -452,10 +452,10 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
         text=get_text("misc_menu"),
         reply_markup=markup_from(
             [
-                [
-                    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
-                    ("Найти учителя", CallbackEnum.FIND_TEACHER),
-                ],
+                #[
+                #    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
+                #    ("Найти учителя", CallbackEnum.FIND_TEACHER),
+                #],
                 [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
                 [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Туториалы", CallbackEnum.TUTORIALS)],
@@ -478,8 +478,13 @@ def find_subclass(update: Update, context: CallbackContext) -> State:
     return State.MISC_MENU
 
 
-def announcements(update: Update, context: CallbackContext) -> State:
-    return State.MISC_MENU
+def announcements_handler(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update,
+        text="\n\n".join(announcements),
+        reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU
 
 
 def helpful_materials(update: Update, context: CallbackContext) -> State:
@@ -526,6 +531,14 @@ def technical_support(update: Update, context: CallbackContext) -> State:
     return State.MAIN_MENU
 
 
+def change_info(update: Update, context: CallbackContext) -> State:
+    telegram_id = get_telegram_id(update)
+    if isinstance(DBTG.get_user(telegram_id), Student):
+        return choose_parallel(update, context)
+    else:
+        return ask_teacher_name(update, context)
+
+
 def main_menu_distributor(update: Update, context: CallbackContext):
     event = CallbackEnum(update.callback_query.data)
     if event == CallbackEnum.CHECK_NEXT_LESSON:
@@ -551,13 +564,15 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.FIND_TEACHER:
         return find_teacher(update, context)
     elif event == CallbackEnum.ANNOUNCEMENTS:
-        return announcements(update, context)
+        return announcements_handler(update, context)
     elif event == CallbackEnum.HELPFUL_MATERIALS:
         return helpful_materials(update, context)
     elif event == CallbackEnum.HELP:
         return technical_support(update, context)
     elif event == CallbackEnum.TUTORIALS:
         return tutorials(update, context)
+    elif event == CallbackEnum.CHANGE_INFORMATION:
+        return change_info(update, context)
     elif event == CallbackEnum.MAIN_MENU:
         return main_menu(update, context)
     else:
