@@ -452,10 +452,10 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
         text=get_text("misc_menu"),
         reply_markup=markup_from(
             [
-                [
-                    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
-                    ("Найти учителя", CallbackEnum.FIND_TEACHER),
-                ],
+                #[
+                #    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
+                #    ("Найти учителя", CallbackEnum.FIND_TEACHER),
+                #],
                 [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
                 [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Туториалы", CallbackEnum.TUTORIALS)],
