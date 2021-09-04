@@ -478,7 +478,7 @@ def find_subclass(update: Update, context: CallbackContext) -> State:
     return State.MISC_MENU
 
 
-def announcements(update: Update, context: CallbackContext) -> State:
+def announcements_handler(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
         text="\n\n".join(announcements),
@@ -556,7 +556,7 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.FIND_TEACHER:
         return find_teacher(update, context)
     elif event == CallbackEnum.ANNOUNCEMENTS:
-        return announcements(update, context)
+        return announcements_handler(update, context)
     elif event == CallbackEnum.HELPFUL_MATERIALS:
         return helpful_materials(update, context)
     elif event == CallbackEnum.HELP:
