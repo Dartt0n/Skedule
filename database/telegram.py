@@ -62,6 +62,7 @@ class TelegramAgent:
         self.session.commit()
 
     def change_subclass(self, telegram_id: int, subclass: str) -> None:
+        # sourcery skip: class-extract-method
         user = (
             self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
         )
@@ -69,7 +70,9 @@ class TelegramAgent:
         self.session.commit()
 
     def change_teacher_name(self, telegram_id: int, teacher_name: str) -> None:
-        teacher = self.session.query(TelegramUser).filter_by(telegram_id=telegram_id)
+        teacher = (
+            self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
+        )
         teacher.teacher_name = teacher_name
         self.session.commit()
 

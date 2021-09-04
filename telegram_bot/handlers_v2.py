@@ -197,6 +197,7 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
 
 def save_teacher_name_to_database(update: Update, context: CallbackContext) -> State:
     name = context.user_data["USER_NAME"]
+    print(name)
     telegram_id = get_telegram_id(update)
     if not DBTG.check_if_user_exists(telegram_id):
         # new teacher
