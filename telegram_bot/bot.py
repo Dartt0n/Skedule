@@ -80,6 +80,11 @@ def run() -> None:
                     ),
                 ],
                 State.MAIN_MENU: [CallbackQueryHandler(handlers.main_menu_distributor)],
+                State.MISC_MENU: [CallbackQueryHandler(handlers.misc_menu_distributor)],
+                State.SELECT_DAY_OF_WEEK: [
+                    CallbackQueryHandler(handlers.get_timetable_certain_day)
+                ],
+                State.HELP_MENU: [CallbackQueryHandler(handlers.help_menu_distributor)],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )

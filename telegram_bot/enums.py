@@ -35,7 +35,7 @@ class CallbackEnum(AutoName):
     FIND_SUBCLASS = auto()
     FIND_TEACHER = auto()
     ANNOUNCEMENTS = auto()
-    HELPFUL_LINKS = auto()
+    HELPFUL_MATERIALS = auto()
     HELP = auto()
     MAIN_MENU = auto()
     CHANGE_INFORMATION = auto()
@@ -56,14 +56,19 @@ class CallbackEnum(AutoName):
     TUTORIALS = auto()
     EXAMPLES = auto()
     FAQ = auto()
+    CARTEEN = auto()
+    RINGS = auto()
 
 
 class State(AutoName):
     MAIN_MENU = auto()
     LOGIN = auto()
+    MISC_MENU = auto()
+    HELP_MENU = auto()
     PARALLEL_ENTERED = auto()
     LETTER_ENTERED = auto()
     GROUP_ENTERED = auto()
     CONFIRM_SUBCLASS = auto()
     NAME_ENTERED = auto()
     CONFIRM_NAME = auto()
+    SELECT_DAY_OF_WEEK = auto()

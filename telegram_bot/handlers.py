@@ -101,7 +101,6 @@ def choose_letter(update: Update, context) -> State.CHANGE_CLASS:
     return State.CHANGE_CLASS
 
 
-
 def choose_group(update: Update, context) -> State:
     s_class = update.callback_query.data
     update_query(
@@ -182,7 +181,7 @@ def misc_menu(update: Update, context) -> State.MAIN_MENU:
                     ("Найти учителя", CallbackEnum.FIND_TEACHER),
                 ],
                 [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
-                [("Полезные материалы", CallbackEnum.HELPFUL_LINKS)],
+                [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Тех. Помощь", CallbackEnum.HELP)],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
@@ -199,9 +198,7 @@ def get_next_lesson(update: Update, context) -> State.MAIN_MENU:
         text = "Не удалось найти следующий урок, возможно стоит опробовать эту функцию в учебное время?"
     else:
         lesson = AGENT.get_lesson(
-            user,
-            get_current_day_of_week(),
-            lesson_number=lesson_number+1
+            user, get_current_day_of_week(), lesson_number=lesson_number + 1
         )
         if not lesson:
             text = "Не удалось найти следующий урок, возможно стоит опробовать эту функцию в учебное время?"
@@ -324,5 +321,3 @@ def technical_support(update: Update, context) -> State.MAIN_MENU:
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
-
-
