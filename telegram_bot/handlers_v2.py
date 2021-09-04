@@ -484,7 +484,12 @@ def helpful_materials(update: Update, context: CallbackContext) -> State:
 
 
 def technical_support(update: Update, context: CallbackContext) -> State:
-    return State.MISC_MENU
+    update_query(
+        update=update,
+        text=get_text("help_message").format(telegram_id=get_telegram_id(update)),
+        reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU
 
 
 def main_menu_distributor(update: Update, context: CallbackContext):
