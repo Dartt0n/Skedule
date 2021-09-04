@@ -35,7 +35,7 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
-
+announcements = get_json("announcements.json")["data"]
 
 def get_text(text):
     return texts[text]
@@ -479,7 +479,12 @@ def find_subclass(update: Update, context: CallbackContext) -> State:
 
 
 def announcements(update: Update, context: CallbackContext) -> State:
-    return State.MISC_MENU
+    update_query(
+        update=update,
+        text="\n\n".join(announcements),
+        reply_markup=MAIN_MENU_MARKUP
+    )
+    return State.MAIN_MENU
 
 
 def helpful_materials(update: Update, context: CallbackContext) -> State:
