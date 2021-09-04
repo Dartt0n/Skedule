@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ..
-zip -r Skedule.zip Skedule # zip project
-scp Skedule.zip root@skedule.ru:/root # copy files
+zip -r Skedule.zip Skedule
+scp Skedule.zip root@skedule.ru:/root
 
 ssh root@skedule.ru "
 rm -r Skedule;

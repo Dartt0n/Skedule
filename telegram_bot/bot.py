@@ -14,10 +14,10 @@ from jproperties import Properties
 import logging
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO, filename="general.logs"
 )
 logger = logging.getLogger(__name__)
-
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
