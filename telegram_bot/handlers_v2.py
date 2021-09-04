@@ -303,7 +303,9 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
                     lesson_number=lesson.lesson_number,
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
-                    misc_info=lesson.teacher if user.is_student else lesson.subclass,
+                    misc_info=lesson.teacher
+                    if isinstance(user, Student)
+                    else lesson.subclass,
                 )
                 for lesson in timetable.lessons
             )
@@ -333,7 +335,9 @@ def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
                     lesson_number=lesson.lesson_number,
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
-                    misc_info=lesson.teacher if user.is_student else lesson.subclass,
+                    misc_info=lesson.teacher
+                    if isinstance(user, Student)
+                    else lesson.subclass,
                 )
                 for lesson in timetable.lessons
             )
@@ -343,7 +347,57 @@ def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
     return State.MAIN_MENU
 
 
+def select_day_of_week(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update,
+        text=get_text("select_dayweek"),
+        reply_markup=markup_from(
+            [
+                [("Понедельник", "{}_1".format(CallbackEnum.SELECT_DAY_OF_WEEK))],
+                [("Вторник", "{}_2".format(CallbackEnum.SELECT_DAY_OF_WEEK))],
+                [("Среда", "{}_3".format(CallbackEnum.SELECT_DAY_OF_WEEK))],
+                [("Четверг", "{}_4".format(CallbackEnum.SELECT_DAY_OF_WEEK))],
+                [("Пятница", "{}_5".format(CallbackEnum.SELECT_DAY_OF_WEEK))],
+                [("Суббота", "{}_6".format(CallbackEnum.SELECT_DAY_OF_WEEK))],
+            ]
+        ),
+    )
+    return State.SELECT_DAY_OF_WEEK
+
+
 def get_timetable_certain_day(update: Update, context: CallbackContext) -> State:
+    day_of_week = update.callback_query.data.split("_")[-1]
+    user = DBTG.get_user(get_telegram_id(update))
+    timetable = AGENT.get_day(user, day_of_week)
+    days = {
+        "1": "понедельник",
+        "2": "вторник",
+        "3": "среду",
+        "4": "четверг",
+        "5": "пятницу",
+        "6": "субботу",
+        "7": "воскресенье",
+    }
+    update_query(
+        update=update,
+        text=get_text("certain_day_timetable").format(
+            day_of_week=days[day_of_week],
+            lessons="\n\n".join(
+                get_text("lesson_format").format(
+                    lesson_number=lesson.lesson_number,
+                    subject=lesson.subject,
+                    cabinet=lesson.cabinet,
+                    misc_info=lesson.teacher
+                    if isinstance(user, Student)
+                    else lesson.subclass,
+                )
+                for lesson in timetable.lessons
+            ),
+        )
+        if timetable.lessons
+        else "У вас нет уроков в этот день",
+        reply_markup=MAIN_MENU_MARKUP,
+    )
     return State.MAIN_MENU
 
 
@@ -360,7 +414,7 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     timetable = AGENT.get_week(user)
 
-    if not timetable:
+    if all(map(lambda x: x.lessons != [], timetable)):
         update_query(
             update=update,
             text=get_text("check_your_info"),
@@ -383,7 +437,7 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
                     )
                     for lesson in day.lessons
                 )
-            ) 
+            )
             for day in filter(lambda x: x.lessons != [], timetable)
         ),
         reply_markup=MAIN_MENU_MARKUP,
@@ -393,7 +447,44 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
 
 
 def misc_menu(update: Update, context: CallbackContext) -> State:
-    return State.MAIN_MENU
+    update_query(
+        update,
+        text=get_text("misc_menu"),
+        reply_markup=markup_from(
+            [
+                [
+                    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
+                    ("Найти учителя", CallbackEnum.FIND_TEACHER),
+                ],
+                [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
+                [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
+                [("Тех. Помощь", CallbackEnum.HELP)],
+                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+            ]
+        ),
+    )
+    return State.MISC_MENU
+
+
+def find_teacher(update: Update, context: CallbackContext) -> State:
+    return State.MISC_MENU
+
+
+def find_subclass(update: Update, context: CallbackContext) -> State:
+    return State.MISC_MENU
+
+
+def announcements(update: Update, context: CallbackContext) -> State:
+    return State.MISC_MENU
+
+
+def helpful_materials(update: Update, context: CallbackContext) -> State:
+    return State.MISC_MENU
+
+
+def technical_support(update: Update, context: CallbackContext) -> State:
+    return State.MISC_MENU
 
 
 def main_menu_distributor(update: Update, context: CallbackContext):
@@ -405,10 +496,28 @@ def main_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.CHECK_TOMORROW:
         return get_timetable_tommorow(update, context)
     elif event == CallbackEnum.CHECK_CERTAIN_DAY:
-        return get_timetable_certain_day(update, context)
+        return select_day_of_week(update, context)
     elif event == CallbackEnum.CHECK_WEEK:
         return get_timetable_week(update, context)
     elif event == CallbackEnum.MISC_MENU:
         return misc_menu(update, context)
+    else:
+        return State.MAIN_MENU
+
+
+def misc_menu_distributor(update: Update, context: CallbackContext):
+    event = CallbackEnum(update.callback_query.data)
+    if event == CallbackEnum.FIND_SUBCLASS:
+        return find_subclass(update, context)
+    elif event == CallbackEnum.FIND_TEACHER:
+        return find_teacher(update, context)
+    elif event == CallbackEnum.ANNOUNCEMENTS:
+        return announcements(update, context)
+    elif event == CallbackEnum.HELPFUL_MATERIALS:
+        return helpful_materials(update, context)
+    elif event == CallbackEnum.HELP:
+        return technical_support(update, context)
+    elif event == CallbackEnum.MAIN_MENU:
+        return main_menu(update, context)
     else:
         return State.MAIN_MENU
