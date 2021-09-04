@@ -73,12 +73,10 @@ class User:
 class Teacher(User):
     def __init__(self, name: str):
         self.name = name
-        super(Teacher, self).__init__("teachers_table", {"teacher": name})
+        super(Teacher, self).__init__("timetable", {"teacher": name})
 
 
 class Student(User):
     def __init__(self, subclass: str):
         self.subclass = subclass
-        super(Student, self).__init__(
-            f"tt{subclass[:-2]}_20_21", {"subclass": subclass}
-        )
+        super(Student, self).__init__(f"timetable", {"subclass": subclass})

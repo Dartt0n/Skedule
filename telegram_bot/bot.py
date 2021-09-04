@@ -80,7 +80,7 @@ def run() -> None:
                     ),
                 ],
             },
-            fallbacks=[],
+            fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )
     )
 
