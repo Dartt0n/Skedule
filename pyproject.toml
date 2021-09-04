@@ -1,8 +1,7 @@
 [tool.poetry]
 name = "skedule"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
-authors = ["Dartt0n <antonkudryavtsevdoem@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
