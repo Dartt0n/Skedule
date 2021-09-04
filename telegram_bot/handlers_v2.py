@@ -81,12 +81,12 @@ def choose_parallel(update: Update, context: CallbackContext) -> State:
         reply_markup=markup_from(
             [
                 [
-                    ("8ой класс", "{}_8".format(CallbackEnum.PARALLEL)),
-                    ("9ый класс", "{}_9".format(CallbackEnum.PARALLEL)),
+                    ("8 класс", "{}_8".format(CallbackEnum.PARALLEL)),
+                    ("9 класс", "{}_9".format(CallbackEnum.PARALLEL)),
                 ],
                 [
-                    ("10ый класс", "{}_10".format(CallbackEnum.PARALLEL)),
-                    ("11ый класс", "{}_11".format(CallbackEnum.PARALLEL)),
+                    ("10 класс", "{}_10".format(CallbackEnum.PARALLEL)),
+                    ("11 класс", "{}_11".format(CallbackEnum.PARALLEL)),
                 ],
             ]
         ),
@@ -123,8 +123,8 @@ def choose_group(update: Update, context: CallbackContext) -> State:
         text=get_text("enter_subclass"),
         reply_markup=markup_from(
             [
-                [("1ая группа", "{}_1".format(CallbackEnum.GROUP))],
-                [("2ая группа", "{}_2".format(CallbackEnum.GROUP))],
+                [("1 группа", "{}_1".format(CallbackEnum.GROUP))],
+                [("2 группа", "{}_2".format(CallbackEnum.GROUP))],
             ]
         ),
     )
@@ -208,6 +208,7 @@ def save_teacher_name_to_database(update: Update, context: CallbackContext) -> S
         DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
     return main_menu(update, context)
 
+
 def get_next_lesson(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     lesson_number = get_lesson_number(datetime.now())  # current lesson
@@ -215,11 +216,13 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
     if lesson_number != -1:  # find lesson
         timetable = AGENT.get_day(user, day_of_week)
         if timetable.lessons:  # there are some lessons today
-            for lesson_t in timetable.lessons:
-                print(timetable.lessons)
+            for i, lesson_t in enumerate(timetable.lessons):
                 if lesson_t.lesson_number > lesson_number:  # search first after current
                     lesson = lesson_t  # found lesson
-                    return send_lesson(update, lesson)
+                    check_group(timetable, i, lesson)
+                    return send_lesson(update, user, lesson, day_of_week)
+            else:
+                timetable = AGENT.get_day(user, day_of_week + 1)
     elif datetime.now() in DateTimeRange("0:00", "8:14"):  # early morning
         timetable = AGENT.get_day(user, day_of_week)  # today
     else:  # afer lessons
@@ -231,23 +234,50 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
             timetable = AGENT.get_day(user, day_of_week)  # timetable for monday
             if timetable.lessons:
                 lesson = timetable.lessons[0]
-                return send_lesson(update, lesson)
+                check_group(timetable, 1, lesson)
+                return send_lesson(update, user, lesson, day_of_week)
         # wrong parameters
         text = get_text("can_not_find_next_lesson")
     else:  # there is some lessons
         lesson = timetable.lessons[0]
-        send_lesson(update, lesson)
+        check_group(timetable, 1, lesson)
+        send_lesson(update, user, lesson, day_of_week)
 
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
 
-def send_lesson(update, lesson):
-    text = get_text("lesson_format").format(
-        lesson_number=lesson.lesson_number,
-        subject=lesson.subject,
-        cabinet=lesson.cabinet,
-        teacher=lesson.teacher,
+def check_group(timetable, i, lesson):
+    groups = [lesson.subclass]
+    while (
+        len(timetable.lessons) > i
+        and timetable.lessons[i].lesson_number == lesson.lesson_number
+    ):
+        groups.append(timetable.lessons[i].subclass)
+        i += 1
+    lesson.subclass = ", ".join(groups)
+
+
+def send_lesson(update, user, lesson, day_of_week):
+    days = {
+        1: "понедельник",
+        2: "вторник",
+        3: "среду",
+        4: "четверг",
+        5: "пятницу",
+        6: "субботу",
+        7: "воскресенье",
+    }
+    text = (
+        "Следующий урок в "
+        + days[day_of_week]
+        + ".\n\n"
+        + get_text("lesson_format").format(
+            lesson_number=lesson.lesson_number,
+            subject=lesson.subject,
+            cabinet=lesson.cabinet,
+            misc_info=lesson.teacher if user is Student else lesson.subclass,
+        )
     )
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
@@ -260,12 +290,11 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
     if not timetable.lessons:
         update_query(
             update=update,
-            text=get_text("no_lessons_today"),
+            text=get_text("no_lessons"),
             reply_markup=MAIN_MENU_MARKUP,
         )
         return State.MAIN_MENU
 
-    # TODO CHANGE FORMAT FOR TEACHER
     update_query(
         update=update,
         text=get_text("today_timetable").format(
@@ -274,26 +303,98 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
                     lesson_number=lesson.lesson_number,
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
-                    teacher=lesson.teacher,
+                    misc_info=lesson.teacher if user.is_student else lesson.subclass,
                 )
                 for lesson in timetable.lessons
             )
         ),
-        reply_markup=MAIN_MENU_MARKUP
+        reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
+
 def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
+    user = DBTG.get_user(get_telegram_id(update))
+    timetable = AGENT.get_day(user, get_current_day_of_week() + 1)
+
+    if not timetable.lessons:
+        update_query(
+            update=update,
+            text=get_text("no_lessons"),
+            reply_markup=MAIN_MENU_MARKUP,
+        )
+        return State.MAIN_MENU
+
+    update_query(
+        update=update,
+        text=get_text("tomorrow_timetable").format(
+            lessons="\n\n".join(
+                get_text("lesson_format").format(
+                    lesson_number=lesson.lesson_number,
+                    subject=lesson.subject,
+                    cabinet=lesson.cabinet,
+                    misc_info=lesson.teacher if user.is_student else lesson.subclass,
+                )
+                for lesson in timetable.lessons
+            )
+        ),
+        reply_markup=MAIN_MENU_MARKUP,
+    )
     return State.MAIN_MENU
+
 
 def get_timetable_certain_day(update: Update, context: CallbackContext) -> State:
     return State.MAIN_MENU
 
+
 def get_timetable_week(update: Update, context: CallbackContext) -> State:
+    days = days = {
+        1: "Понедельник",
+        2: "Вторник",
+        3: "Среда",
+        4: "Четверг",
+        5: "Пятница",
+        6: "Суббота",
+        7: "Воскресенье",
+    }
+    user = DBTG.get_user(get_telegram_id(update))
+    timetable = AGENT.get_week(user)
+
+    if not timetable:
+        update_query(
+            update=update,
+            text=get_text("check_your_info"),
+            reply_markup=MAIN_MENU_MARKUP,
+        )
+
+    update_query(
+        update=update,
+        text="\n\n".join(
+            (
+                (days[day.day_of_week] + "\n\n")
+                + "\n\n".join(
+                    get_text("lesson_format").format(
+                        lesson_number=lesson.lesson_number,
+                        subject=lesson.subject,
+                        cabinet=lesson.cabinet,
+                        misc_info=lesson.teacher
+                        if isinstance(user, Student)
+                        else lesson.subclass,
+                    )
+                    for lesson in day.lessons
+                )
+            ) 
+            for day in filter(lambda x: x.lessons != [], timetable)
+        ),
+        reply_markup=MAIN_MENU_MARKUP,
+    )
+
     return State.MAIN_MENU
+
 
 def misc_menu(update: Update, context: CallbackContext) -> State:
     return State.MAIN_MENU
+
 
 def main_menu_distributor(update: Update, context: CallbackContext):
     event = CallbackEnum(update.callback_query.data)

@@ -35,6 +35,7 @@ class TableLesson:
     subject: int
     teacher: str
     cabinet: str
+    subclass: str
 
     def from_database(database_row: DatabaseRow):
         return TableLesson(
@@ -42,6 +43,7 @@ class TableLesson:
             database_row.subject,
             database_row.teacher,
             database_row.cabinet,
+            database_row.subclass,
         )
 
 
