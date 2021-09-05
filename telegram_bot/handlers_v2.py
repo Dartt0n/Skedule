@@ -1,4 +1,5 @@
 from datetime import datetime
+from telegram_bot.handlers import startup_handler
 from typing import Callable
 
 from datetimerange import DateTimeRange
@@ -534,10 +535,15 @@ def technical_support(update: Update, context: CallbackContext) -> State:
 
 def change_info(update: Update, context: CallbackContext) -> State:
     telegram_id = get_telegram_id(update)
-    if isinstance(DBTG.get_user(telegram_id), Student):
-        return choose_parallel(update, context)
-    else:
-        return ask_teacher_name(update, context)
+    # if isinstance(DBTG.get_user(telegram_id), Student):
+    #     return choose_parallel(update, context)
+    # else:
+    #     return ask_teacher_name(update, context)
+    keyboard = markup_from(
+        [[("Ученик", CallbackEnum.IM_STUDENT)], [("Учитель", CallbackEnum.IM_TEACHER)]]
+    )
+    update_query(text=get_text("greeting.txt"), reply_markup=keyboard)
+    return State.LOGIN
 
 
 def main_menu_distributor(update: Update, context: CallbackContext):
