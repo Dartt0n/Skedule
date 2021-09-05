@@ -38,7 +38,7 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
-announcements = get_json("announcements.json")["data"]
+announcements = map(lambda text: "  "+text, get_json("announcements.json")["data"])
 
 
 def get_text(text):

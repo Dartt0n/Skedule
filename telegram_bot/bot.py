@@ -75,7 +75,7 @@ def run() -> None:
                 State.NAME_ENTERED: [
                     MessageHandler(
                         Filters.regex(
-                            f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s[А-ЯЁ]\.\s?[А-ЯЁ]\.$"
+                            f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s*[А-ЯЁ]\.\s*[А-ЯЁ]\.\s*$"
                         ),
                         handlers.confirm_teacher_name,
                     )
