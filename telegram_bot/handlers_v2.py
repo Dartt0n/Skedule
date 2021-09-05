@@ -477,7 +477,7 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
                 #    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
                 #    ("Найти учителя", CallbackEnum.FIND_TEACHER),
                 # ],
-                [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
+                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
                 [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Туториалы", CallbackEnum.TUTORIALS)],
                 [("Тех. Помощь", CallbackEnum.HELP)],
