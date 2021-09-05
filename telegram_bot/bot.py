@@ -20,7 +20,7 @@ logging.basicConfig(
     filemode="w"
 )
 logger = logging.getLogger(__name__)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 
 
 
@@ -97,6 +97,7 @@ def run() -> None:
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )
     )
+    updater.dispatcher.add_error_handler(lambda *args: None)
 
     # Start the Bot
     updater.start_polling()

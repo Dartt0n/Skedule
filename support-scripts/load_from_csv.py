@@ -41,7 +41,7 @@ Base = declarative_base()
 
 
 class Lesson(Base):
-    __tablename__ = "timetable"
+    __tablename__ = "timetable_2korpus"
     id = Column(Integer, nullable=False, primary_key=True)
     lesson_number = Column(SmallInteger, nullable=False)
     day_of_week = Column(SmallInteger, nullable=False)
@@ -54,8 +54,8 @@ class Lesson(Base):
 mariadb_session = sessionmaker(bind=mariadb)()
 
 
-with open("/home/dartt0n/Downloads/blka/timetable 1 korp.csv") as file:
-    rows = csv.reader(file, delimiter=",")
+with open("/home/dartt0n/Downloads/Telegram Desktop/2 korpus.csv") as file:
+    rows = csv.reader(file, delimiter=";")
     for lessons in rows:
         for lesson in lessons:
             print(lesson)
@@ -75,4 +75,4 @@ with open("/home/dartt0n/Downloads/blka/timetable 1 korp.csv") as file:
                 cabinet=cabinet,
             )
             mariadb_session.add(l)
-            mariadb_session.commit()
+    mariadb_session.commit()
