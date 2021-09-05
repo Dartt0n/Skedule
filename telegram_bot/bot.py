@@ -17,15 +17,15 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.ERROR,
     filename="general.log",
-    filemode="w"
+    filemode="w",
 )
 logger = logging.getLogger(__name__)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 
 
-
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
+
 
 def run() -> None:
     """Run the bot."""
@@ -34,9 +34,9 @@ def run() -> None:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
     updater = Updater(properties["TG_TOKEN"].data)
-    
+
     handlers.announce_bot_restart(updater)
-    
+
     updater.dispatcher.add_handler(
         ConversationHandler(
             entry_points=[
@@ -73,7 +73,12 @@ def run() -> None:
                     ),
                 ],
                 State.NAME_ENTERED: [
-                    MessageHandler(Filters.text, handlers.confirm_teacher_name)
+                    MessageHandler(
+                        Filters.regex(
+                            f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s[А-ЯЁ]\.\s?[А-ЯЁ]\.$"
+                        ),
+                        handlers.confirm_teacher_name,
+                    )
                 ],
                 State.CONFIRM_NAME: [
                     CallbackQueryHandler(
