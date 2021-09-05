@@ -278,12 +278,23 @@ def send_lesson(update, user, lesson, day_of_week):
         6: "субботу",
         7: "воскресенье",
     }
+    lessons_time = {
+        1: "9:00 - 9:40",
+        2: "9:50 - 10:30",
+        3: "10:45 - 11:25",
+        4: "11:40 - 12:20",
+        5: "12:40 - 13:20",
+        6: "13:40 - 14:20",
+        7: "14:40 - 15:20",
+        8: "15:30 - 16:10"
+    }
     text = (
         "Следующий урок в "
         + days[day_of_week]
         + ".\n\n"
         + get_text("lesson_format").format(
             lesson_number=lesson.lesson_number,
+            lesson_time=lessons_time[lesson.lesson_number],
             subject=lesson.subject,
             cabinet=lesson.cabinet,
             misc_info=lesson.teacher if isinstance(user, Student) else lesson.subclass,
