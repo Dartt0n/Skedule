@@ -16,6 +16,7 @@
     "select_dayweek": "Выберите день недели из предложенных, пожалуйста:",
     "can_not_find_next_lesson": "Не могу найти следующий урок, убедитесь что правильно ввели свой класс или Фио.\nКласс или ФИО можно изменить специальной кнопкой.\nЕсли вы уверены что ввели все верно, и я должен найти следующий урок, сообщите об этом техническую поддержку использовав специальную кнопку",
     "lesson_format": "Урок №{lesson_number}\nПредмет: \"{subject}\"\n{misc_info}\n{cabinet}",
+    "next_lesson_format": "Урок №{lesson_number} в {lesson_time}\nПредмет: \"{subject}\"\n{misc_info}\n{cabinet}",
     "no_lessons": "Нет уроков! Приятного отдыха!",
     "today_timetable": "Ваши уроки сегодня:\n{lessons}",
     "tomorrow_timetable": "Ваши уроки завтра:\n{lessons}",

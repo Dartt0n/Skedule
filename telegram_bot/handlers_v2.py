@@ -292,7 +292,7 @@ def send_lesson(update, user, lesson, day_of_week):
         "Следующий урок в "
         + days[day_of_week]
         + ".\n\n"
-        + get_text("lesson_format").format(
+        + get_text("next_lesson_format").format(
             lesson_number=lesson.lesson_number,
             lesson_time=lessons_time[lesson.lesson_number],
             subject=lesson.subject,
@@ -303,7 +303,7 @@ def send_lesson(update, user, lesson, day_of_week):
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
-
+2
 def get_timetable_today(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     timetable = AGENT.get_day(user, get_current_day_of_week())
