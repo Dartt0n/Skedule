@@ -23,11 +23,6 @@ def load_profile():
     with open(path_to_file, "r") as f:
         return f.read()
 
-TOKEN_INFO = {
-    "users": "TG_TOKEN",
-    "debug_users": "TG_TEST_TOKEN"
-}
-
 class TelegramUser(Base):
     __tablename__ = load_profile()
     id = Column(Integer, primary_key=True, nullable=False)
