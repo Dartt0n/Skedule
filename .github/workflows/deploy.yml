@@ -22,22 +22,32 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    
+      
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+
+      - name: copy secrets
+        run: |
+          cp /skedule/.properties .
 
       # Runs a set of commands using the runners shell
       - name: stop docker container
         run: |
-          docker stop $(docker ps -a --filter=name=skedule-telegram --format="{{.ID}}");
+          if (docker ps -a --filter=name=skedule-telegram --format="{{.ID}}")
+            then docker stop $(docker ps -a --filter=name=skedule-telegram --format="{{.ID}}");
+          fi
 
       - name: remove docker container
         run: |
-          docker rm $(docker ps -a --filter=name=skedule-telegram --format="{{.ID}}");
+          if (docker ps -a --filter=name=skedule-telegram --format="{{.ID}}")
+            then docker rm $(docker ps -a --filter=name=skedule-telegram --format="{{.ID}}");
+          fi
 
       - name: remove docker images
         run: |
-          docker image rm $(docker images --filter=reference=skedule-telegram --format "{{.ID}}");
+          if (docker images --filter=reference=skedule-telegram --format "{{.ID}}")
+            then docker image rm $(docker images --filter=reference=skedule-telegram --format "{{.ID}}");
+          fi
       
 
       - name: build docker container
