@@ -7,7 +7,12 @@ from database.models import DatabaseRow, User, DatabaseConnection, TableLesson, 
 from typing import List
 from jproperties import Properties
 from os import path
+from multiprocessing import Process
+from time import sleep
 
+def clear_cache_with_timer(session, timer):
+    session.expire_all()
+    sleep(timer)
 
 class Agent:
     def __init__(self, db_conn: DatabaseConnection = None) -> None:
@@ -43,6 +48,10 @@ class Agent:
         self.__base.metadata.reflect(self.__engine)
         # create session. `sessionmaker` return class, so we need use `()` to create an object
         self.__session = sessionmaker(bind=self.__engine)()
+
+        clear_cache_process = Process(target=lambda _: clear_cache_with_timer(self.__session, 3600))
+        clear_cache_process.start()
+
 
     def __get_table(self, user: User) -> Table:
         """Returns table, which can be received from metadata of database.
