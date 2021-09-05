@@ -104,7 +104,7 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
         reply_markup=markup_from(
             [
                 [
-                    (f"{letter}", "{}_{}".format(CallbackEnum.LETTER, letter))
+                    (f"{letter}", "{}_{}".format(CallbackEnum.LETTER, letter.lower()))
                     for letter in letter_list
                 ]
                 for letter_list in ["АБВГДЕ", "ЖЗИЙКЛ", "МНОПРС", "ТУФХЦ", "ЧШЭЮЯ"]
@@ -143,7 +143,7 @@ def confirm_subclass(update: Update, context: CallbackContext) -> State:
     context.user_data["SUBCLASS"] = subclass
     update_query(
         update=update,
-        text=get_text("confirm_class").format(subclass=subclass),
+        text=get_text("confirm_class").format(subclass=subclass.capitalize()),
         reply_markup=markup_from(
             [
                 [("Да, верно", CallbackEnum.CONFIRM_SUBCLASS)],
