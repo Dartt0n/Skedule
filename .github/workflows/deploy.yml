@@ -28,7 +28,7 @@ jobs:
 
       - name: copy secrets
         run: |
-          cp /skedule/.properties .
+          cp /home/skedule/.properties .
 
       # Runs a set of commands using the runners shell
       - name: stop docker container
