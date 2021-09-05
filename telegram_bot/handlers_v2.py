@@ -189,6 +189,9 @@ def ask_teacher_name(update: Update, context: CallbackContext) -> State:
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
+    if name.count(' ') == 2:
+        # Surname. N. N.
+        name = "{} {}{}".format(*name.split())
     context.user_data["USER_NAME"] = name
 
     update.message.delete()
