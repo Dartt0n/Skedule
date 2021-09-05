@@ -1,22 +1,20 @@
 from datetime import datetime
-from telegram_bot.handlers import startup_handler
-from typing import Callable
-
-from datetimerange import DateTimeRange
 
 from database.interface import Agent
 from database.models import Student
 from database.telegram import TelegramAgent
+from datetimerange import DateTimeRange
 from telegram import Update
 from telegram.ext import CallbackContext
+
 from telegram_bot.enums import CallbackEnum, State
 from telegram_bot.support_functions import (
-    update_query,
     get_current_day_of_week,
+    get_json,
     get_lesson_number,
     get_telegram_id,
-    get_json,
     markup_from,
+    update_query,
 )
 
 DBTG = TelegramAgent()
@@ -37,6 +35,7 @@ MAIN_MENU_MARKUP = markup_from(
 
 texts = get_json("texts.json")
 announcements = get_json("announcements.json")["data"]
+
 
 def get_text(text):
     return texts[text]
@@ -220,7 +219,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
             for i, lesson_t in enumerate(timetable.lessons):
                 if lesson_t.lesson_number > lesson_number:  # search first after current
                     lesson = lesson_t  # found lesson
-                    #check_group(timetable, i, lesson)
+                    # check_group(timetable, i, lesson)
                     return send_lesson(update, user, lesson, day_of_week)
             else:
                 timetable = AGENT.get_day(user, day_of_week + 1)
@@ -236,13 +235,13 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
                 if timetable.lessons:
                     day_of_week = timetable.day_of_week
                     lesson = timetable.lessons[0]
-                    #check_group(timetable, 1, lesson)
+                    # check_group(timetable, 1, lesson)
                     return send_lesson(update, user, lesson, day_of_week)
         # wrong parameters
         text = get_text("can_not_find_next_lesson")
     else:  # there is some lessons
         lesson = timetable.lessons[0]
-        #check_group(timetable, 1, lesson)
+        # check_group(timetable, 1, lesson)
         send_lesson(update, user, lesson, day_of_week)
 
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
@@ -319,7 +318,7 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
 
 def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
-    timetable = AGENT.get_day(user, get_current_day_of_week()%7 + 1)
+    timetable = AGENT.get_day(user, get_current_day_of_week() % 7 + 1)
 
     if not timetable.lessons:
         update_query(
@@ -454,16 +453,14 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
         text=get_text("misc_menu"),
         reply_markup=markup_from(
             [
-                #[
+                # [
                 #    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
                 #    ("Найти учителя", CallbackEnum.FIND_TEACHER),
-                #],
+                # ],
                 [("Обьявления", CallbackEnum.ANNOUNCEMENTS)],
                 [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Туториалы", CallbackEnum.TUTORIALS)],
-                [
-                    ("Тех. Помощь", CallbackEnum.HELP)
-                ],
+                [("Тех. Помощь", CallbackEnum.HELP)],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
             ]
@@ -482,9 +479,7 @@ def find_subclass(update: Update, context: CallbackContext) -> State:
 
 def announcements_handler(update: Update, context: CallbackContext) -> State:
     update_query(
-        update=update,
-        text="\n\n".join(announcements),
-        reply_markup=MAIN_MENU_MARKUP
+        update=update, text="\n\n".join(announcements), reply_markup=MAIN_MENU_MARKUP
     )
     return State.MAIN_MENU
 

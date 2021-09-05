@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from os import path
-from typing import Dict, Tuple
+from typing import Dict
 
 from datetimerange import DateTimeRange
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update

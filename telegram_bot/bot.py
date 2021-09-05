@@ -1,23 +1,26 @@
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-    CallbackQueryHandler,
-    ConversationHandler,
-    MessageHandler,
-    Filters,
-    handler,
-)
-from telegram_bot.enums import State, CallbackEnum
-import telegram_bot.handlers_v2 as handlers
-from jproperties import Properties
-
 import logging
 
+from jproperties import Properties
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    ConversationHandler,
+    Filters,
+    MessageHandler,
+    Updater,
+)
+
+import telegram_bot.handlers_v2 as handlers
+from telegram_bot.enums import CallbackEnum, State
+
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO, filename="general.logs"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+    filename="general.logs",
 )
 logger = logging.getLogger(__name__)
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+
 
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
