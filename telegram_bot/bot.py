@@ -16,7 +16,7 @@ from telegram_bot.enums import CallbackEnum, State
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
-    filename="general.logs",
+    filename="general.log",
 )
 logger = logging.getLogger(__name__)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
