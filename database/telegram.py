@@ -67,6 +67,8 @@ class TelegramAgent:
             self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
         )
         user.subclass = subclass
+        user.is_student = True
+        user.teacher_name = None
         self.session.commit()
 
     def change_teacher_name(self, telegram_id: int, teacher_name: str) -> None:
@@ -74,6 +76,8 @@ class TelegramAgent:
             self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
         )
         teacher.teacher_name = teacher_name
+        teacher.is_student = False
+        teacher.subclass = None
         self.session.commit()
 
     def get_user(self, telegram_id: int) -> User:
