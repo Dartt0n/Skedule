@@ -535,6 +535,7 @@ def change_info(update: Update, context: CallbackContext) -> State:
     # else:
     #     return ask_teacher_name(update, context)
     update_query(
+        update=update,
         text=get_text("change_me"),
         reply_markup=markup_from(
             [
