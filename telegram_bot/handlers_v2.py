@@ -317,7 +317,7 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
 
 def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
-    timetable = AGENT.get_day(user, get_current_day_of_week() + 1)
+    timetable = AGENT.get_day(user, get_current_day_of_week()%7 + 1)
 
     if not timetable.lessons:
         update_query(
