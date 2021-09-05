@@ -107,7 +107,7 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
                     (f"{letter}", "{}_{}".format(CallbackEnum.LETTER, letter))
                     for letter in letter_list
                 ]
-                for letter_list in ["абвгде", "жзийкл", "мнопрс", "туфхц", "чшэюя"]
+                for letter_list in ["АБВГДЕ", "ЖЗИЙКЛ", "МНОПРС", "ТУФХЦ", "ЧШЭЮЯ"]
             ]
         ),
     )
