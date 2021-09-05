@@ -230,12 +230,13 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
 
     if not timetable.lessons:
         if day_of_week in [6, 7]:  # saturday without lesson or sunday
-            day_of_week = 1
-            timetable = AGENT.get_day(user, day_of_week)  # timetable for monday
-            if timetable.lessons:
-                lesson = timetable.lessons[0]
-                #check_group(timetable, 1, lesson)
-                return send_lesson(update, user, lesson, day_of_week)
+            days = AGENT.get_week(user)  # timetable for monday
+            for timetable in days:
+                if timetable.lessons:
+                    day_of_week = timetable.day_of_week
+                    lesson = timetable.lessons[0]
+                    #check_group(timetable, 1, lesson)
+                    return send_lesson(update, user, lesson, day_of_week)
         # wrong parameters
         text = get_text("can_not_find_next_lesson")
     else:  # there is some lessons
