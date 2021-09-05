@@ -15,7 +15,7 @@ from telegram_bot.enums import CallbackEnum, State
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.DEBUG,
+    level=logging.ERROR,
     filename="general.log",
     filemode="w"
 )
