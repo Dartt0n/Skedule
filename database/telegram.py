@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import sessionmaker
 from jproperties import Properties
-from typing import Any
+from typing import Any, List
 from os import path
 from database.models import User
 
@@ -84,3 +84,6 @@ class TelegramAgent:
         return User.from_database(
             self.session.query(TelegramUser).filter_by(telegram_id=telegram_id).first()
         )
+
+    def get_chats(self) -> List[int]:
+        return list(map(lambda x: x.telegram_id, self.session.query(TelegramUser).all()))

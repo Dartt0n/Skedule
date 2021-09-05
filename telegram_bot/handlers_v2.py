@@ -1,11 +1,13 @@
 from datetime import datetime
 
+from telegram.utils.types import DVInput
+
 from database.interface import Agent
 from database.models import Student
 from database.telegram import TelegramAgent
 from datetimerange import DateTimeRange
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, Updater
 
 from telegram_bot.enums import CallbackEnum, State
 from telegram_bot.support_functions import (
@@ -33,12 +35,19 @@ MAIN_MENU_MARKUP = markup_from(
 )
 
 
+
+
 texts = get_json("texts.json")
 announcements = get_json("announcements.json")["data"]
 
 
 def get_text(text):
     return texts[text]
+    
+
+def announce_bot_restart(updater: Updater):
+    for telegram_id in DBTG.get_chats():
+        updater.bot.send_message(chat_id=telegram_id, text=get_text("restart_message"))
 
 
 def main_menu(update: Update, context, first_time=False) -> State:

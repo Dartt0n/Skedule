@@ -15,16 +15,17 @@ from telegram_bot.enums import CallbackEnum, State
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
+    level=logging.DEBUG,
     filename="general.log",
+    filemode="w"
 )
 logger = logging.getLogger(__name__)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 
+
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
-
 
 def run() -> None:
     """Run the bot."""
@@ -33,10 +34,14 @@ def run() -> None:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
     updater = Updater(properties["TG_TOKEN"].data)
-
+    
+    handlers.announce_bot_restart(updater)
+    
     updater.dispatcher.add_handler(
         ConversationHandler(
-            entry_points=[CommandHandler("start", handlers.start_command_handler)],
+            entry_points=[
+                CommandHandler("start", handlers.start_command_handler),
+            ],
             states={
                 State.LOGIN: [
                     CallbackQueryHandler(
