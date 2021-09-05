@@ -12,6 +12,8 @@ python-telegram-bot = "^13.7"
 jproperties = "^2.1.0"
 mariadb = "^1.0.7"
 DateTimeRange = "^1.2.0"
+loguru = "^0.5.3"
+colour = "^0.1.5"
 
 [tool.poetry.dev-dependencies]
 loguru = "^0.5.3"
