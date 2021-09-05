@@ -1,3 +1,4 @@
+from database.telegram import load_profile
 import logging
 
 from jproperties import Properties
@@ -22,6 +23,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
 
+TOKEN_INFO = {
+    "users": "TG_TOKEN",
+    "debug_users": "TG_TEST_TOKEN"
+}
 
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
@@ -33,7 +38,7 @@ def run() -> None:
     with open(".properties", "rb") as config:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
-    updater = Updater(properties["TG_TOKEN"].data)
+    updater = Updater(properties[TOKEN_INFO[load_profile()]].data)
 
     handlers.announce_bot_restart(updater)
 

@@ -16,9 +16,20 @@ from database.models import User
 
 Base = declarative_base()
 
+def load_profile():
+    path_to_file = path.abspath(
+        path.join(path.dirname(__file__), "..", "switch_profile")
+    )
+    with open(path_to_file, "r") as f:
+        return f.read()
+
+TOKEN_INFO = {
+    "users": "TG_TOKEN",
+    "debug_users": "TG_TEST_TOKEN"
+}
 
 class TelegramUser(Base):
-    __tablename__ = "users"
+    __tablename__ = load_profile()
     id = Column(Integer, primary_key=True, nullable=False)
     telegram_id = Column(Integer, nullable=False)
     is_student = Column(Boolean, nullable=False)
