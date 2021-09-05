@@ -35,19 +35,22 @@ MAIN_MENU_MARKUP = markup_from(
 )
 
 
-
-
 texts = get_json("texts.json")
-announcements = map(lambda text: "  "+text, get_json("announcements.json")["data"])
+announcements = map(lambda text: "  " + text, get_json("announcements.json")["data"])
 
 
 def get_text(text):
     return texts[text]
-    
+
 
 def announce_bot_restart(updater: Updater):
     for telegram_id in DBTG.get_chats():
-        updater.bot.send_message(chat_id=telegram_id, text=get_text("restart_message"))
+        updater.bot.send_message(
+            chat_id=telegram_id,
+            text=get_text("update_text")
+            + get_text("last_update")
+            + get_text("restart_message"),
+        )
 
 
 def main_menu(update: Update, context, first_time=False) -> State:
@@ -189,7 +192,7 @@ def ask_teacher_name(update: Update, context: CallbackContext) -> State:
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
-    if name.count(' ') == 2:
+    if name.count(" ") == 2:
         # Surname. N. N.
         name = "{} {}{}".format(*name.split())
     context.user_data["USER_NAME"] = name
@@ -289,7 +292,7 @@ def send_lesson(update, user, lesson, day_of_week):
         5: "12:40 - 13:20",
         6: "13:40 - 14:20",
         7: "14:40 - 15:20",
-        8: "15:30 - 16:10"
+        8: "15:30 - 16:10",
     }
     text = (
         "Следующий урок в "
@@ -306,7 +309,10 @@ def send_lesson(update, user, lesson, day_of_week):
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
+
 2
+
+
 def get_timetable_today(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     timetable = AGENT.get_day(user, get_current_day_of_week())
