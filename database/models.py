@@ -35,6 +35,7 @@ class TableLesson:
     subject: int
     teacher: str
     cabinet: str
+    subclass: str
 
     def from_database(database_row: DatabaseRow):
         return TableLesson(
@@ -42,6 +43,7 @@ class TableLesson:
             database_row.subject,
             database_row.teacher,
             database_row.cabinet,
+            database_row.subclass,
         )
 
 
@@ -60,15 +62,23 @@ class User:
     """
     Dataclass describing user
     """
+
     table_name: str
     filter: Dict[str, Any]
+
+    def from_database(user):
+        if user.is_student:
+            return Student(user.subclass)
+        return Teacher(user.teacher_name)
+
 
 class Teacher(User):
     def __init__(self, name: str):
         self.name = name
-        super(Teacher, self).__init__("teachers_table", {"teacher": name})
-    
+        super(Teacher, self).__init__("timetable", {"teacher": name})
+
+
 class Student(User):
     def __init__(self, subclass: str):
         self.subclass = subclass
-        super(Student, self).__init__(f"tt{subclass[:-2]}_20_21", {"subclass": subclass})
+        super(Student, self).__init__(f"timetable", {"subclass": subclass})

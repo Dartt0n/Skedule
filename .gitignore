@@ -3,4 +3,7 @@
 /.idea
 # secret keys
 .properties
-
+# dump data
+*.pickle
+__pycache__
+*.logs
