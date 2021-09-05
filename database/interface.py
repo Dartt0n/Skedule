@@ -49,7 +49,7 @@ class Agent:
         # create session. `sessionmaker` return class, so we need use `()` to create an object
         self.__session = sessionmaker(bind=self.__engine)()
 
-        clear_cache_process = Process(target=lambda _: clear_cache_with_timer(self.__session, 3600))
+        clear_cache_process = Process(target=lambda: clear_cache_with_timer(self.__session, 3600))
         clear_cache_process.start()
 
 
