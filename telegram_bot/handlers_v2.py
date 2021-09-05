@@ -539,11 +539,16 @@ def change_info(update: Update, context: CallbackContext) -> State:
     #     return choose_parallel(update, context)
     # else:
     #     return ask_teacher_name(update, context)
-    keyboard = markup_from(
-        [[("Ученик", CallbackEnum.IM_STUDENT)], [("Учитель", CallbackEnum.IM_TEACHER)]]
+    update_query(
+        text=get_text("change_me"),
+        reply_markup=markup_from(
+            [
+                [("Ученик", CallbackEnum.IM_STUDENT)],  # buttons for students
+                [("Учитель", CallbackEnum.IM_TEACHER)],  # and for teachers
+            ]
+        ),
     )
-    update_query(text=get_text("greeting.txt"), reply_markup=keyboard)
-    return State.LOGIN
+    return State.LOGIN  # as user is not registred we send him to login state
 
 
 def main_menu_distributor(update: Update, context: CallbackContext):
