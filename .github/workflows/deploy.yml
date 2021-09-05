@@ -35,4 +35,4 @@ jobs:
       - name: build docker
         run: |
           docker build -t skedule-telegram .;
-          docker run -d --name skedule-telegram skedule-telegram"
+          docker run -d --name skedule-telegram skedule-telegram
