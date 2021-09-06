@@ -4,7 +4,17 @@ from sqlalchemy.orm.session import sessionmaker
 from jproperties import Properties
 from typing import Any
 from os import path
+import csv
 
+
+weekdays = {
+    "Понедельник": 1,
+    "Вторник": 2,
+    "Пятница": 5,
+    "Среда": 3,
+    "Суббота": 6,
+    "Четверг": 4,
+}
 # loading config
 DIR = path.abspath(".")
 
@@ -30,8 +40,8 @@ print("connected")
 Base = declarative_base()
 
 
-class MDB_Lesson(Base):
-    __tablename__ = "tt10_20_21"
+class Lesson(Base):
+    __tablename__ = "timetable_2korpus"
     id = Column(Integer, nullable=False, primary_key=True)
     lesson_number = Column(SmallInteger, nullable=False)
     day_of_week = Column(SmallInteger, nullable=False)
@@ -43,35 +53,26 @@ class MDB_Lesson(Base):
 
 mariadb_session = sessionmaker(bind=mariadb)()
 
-sqlite = create_engine("sqlite:///database/database.db")
-Base = declarative_base()
 
+with open("/home/dartt0n/Downloads/Telegram Desktop/2 korpus.csv") as file:
+    rows = csv.reader(file, delimiter=";")
+    for lessons in rows:
+        for lesson in lessons:
+            print(lesson)
+            weekday, lesson_number, subclass, cabinet, subject, teacher = map(
+                lambda x: x.strip(), lesson.split("~")
+            )
+            weekday = weekdays[weekday]
 
-class SLT_Lessons(Base):
-    __tablename__ = "lessons"
-    id = Column(Integer, primary_key=True)
-    lesson_number = Column(Integer)
-    subject = Column(String)
-    day_of_week = Column(Integer)
-    teacher = Column(String)
-    cabinet = Column(String)
-    class_group = Column(String)
+            print(weekday, lesson_number, subclass, cabinet, subject, teacher)
 
-
-sqlite_session = sessionmaker(bind=sqlite)()
-
-all_sqlite_data = sqlite_session.query(SLT_Lessons).all()
-
-for sqlite_lesson_row in all_sqlite_data:
-    mariadb_lesson_row = MDB_Lesson(
-        lesson_number=sqlite_lesson_row.lesson_number,
-        day_of_week=sqlite_lesson_row.day_of_week,
-        subject=sqlite_lesson_row.subject,
-        teacher=sqlite_lesson_row.teacher,
-        cabinet=sqlite_lesson_row.cabinet,
-        subclass=sqlite_lesson_row.class_group,
-    )
-    mariadb_session.add(mariadb_lesson_row)
+            l = Lesson(
+                lesson_number=lesson_number,
+                subclass=subclass,
+                day_of_week=weekday,
+                subject=subject,
+                teacher=teacher,
+                cabinet=cabinet,
+            )
+            mariadb_session.add(l)
     mariadb_session.commit()
-
-print("done")
