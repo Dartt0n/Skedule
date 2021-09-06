@@ -466,7 +466,7 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
         update=update,
         text="\n\n".join(
             (
-                (days[day.day_of_week] + "\n\n")
+                "-"*30+"\n*"(days[day.day_of_week]+"*" + "\n\n")
                 + "\n\n".join(
                     get_text("lesson_format").format(
                         lesson_number=lesson.lesson_number,
