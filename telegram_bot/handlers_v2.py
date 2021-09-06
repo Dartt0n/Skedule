@@ -241,8 +241,15 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
     elif datetime.now() in DateTimeRange("0:00", "8:14"):  # early morning
         timetable = AGENT.get_day(user, day_of_week)  # today
     else:  # afer lessons
-        timetable = AGENT.get_day(user, day_of_week + 1)  # next day
-
+        #timetable = AGENT.get_day(user, day_of_week + 1)  # next day
+        days = AGENT.get_week(user)[day_of_week:]  # timetable for monday
+        for d_timetable in days:
+            if d_timetable.lessons:
+                day_of_week = d_timetable.day_of_week
+                lesson = d_timetable.lessons[0]
+                # check_group(timetable, 1, lesson)
+                timetable = d_timetable
+                break
     if not timetable.lessons:
         if day_of_week in [6, 7]:  # saturday without lesson or sunday
             days = AGENT.get_week(user)  # timetable for monday
@@ -257,7 +264,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
     else:  # there is some lessons
         lesson = timetable.lessons[0]
         # check_group(timetable, 1, lesson)
-        send_lesson(update, user, lesson, day_of_week)
+        send_lesson(update, user, lesson, timetable.day_of_week)
 
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
