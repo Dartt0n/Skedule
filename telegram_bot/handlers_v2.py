@@ -19,6 +19,17 @@ from telegram_bot.support_functions import (
     update_query,
 )
 
+LESSON_TIME = {
+    1: "9:00 - 9:40",
+    2: "9:50 - 10:30",
+    3: "10:45 - 11:25",
+    4: "11:40 - 12:20",
+    5: "12:40 - 13:20",
+    6: "13:40 - 14:20",
+    7: "14:40 - 15:20",
+    8: "15:30 - 16:10",
+}
+
 DBTG = TelegramAgent()
 AGENT = Agent()
 MAIN_MENU_MARKUP = markup_from(
@@ -241,7 +252,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
     elif datetime.now() in DateTimeRange("0:00", "8:14"):  # early morning
         timetable = AGENT.get_day(user, day_of_week)  # today
     else:  # afer lessons
-        #timetable = AGENT.get_day(user, day_of_week + 1)  # next day
+        # timetable = AGENT.get_day(user, day_of_week + 1)  # next day
         days = AGENT.get_week(user)[day_of_week:]  # timetable for monday
         for d_timetable in days:
             if d_timetable.lessons:
@@ -283,31 +294,21 @@ def check_group(timetable, i, lesson):
 
 def send_lesson(update, user, lesson, day_of_week):
     days = {
-        1: "понедельник",
-        2: "вторник",
-        3: "среду",
-        4: "четверг",
-        5: "пятницу",
-        6: "субботу",
-        7: "воскресенье",
-    }
-    lessons_time = {
-        1: "9:00 - 9:40",
-        2: "9:50 - 10:30",
-        3: "10:45 - 11:25",
-        4: "11:40 - 12:20",
-        5: "12:40 - 13:20",
-        6: "13:40 - 14:20",
-        7: "14:40 - 15:20",
-        8: "15:30 - 16:10",
+        1: "в понедельник",
+        2: "во вторник",
+        3: "в среду",
+        4: "в четверг",
+        5: "в пятницу",
+        6: "в субботу",
+        7: "в воскресенье",
     }
     text = (
         "Следующий урок в "
         + days[day_of_week]
         + ".\n\n"
-        + get_text("next_lesson_format").format(
+        + get_text("lesson_format").format(
             lesson_number=lesson.lesson_number,
-            lesson_time=lessons_time[lesson.lesson_number],
+            lesson_time=LESSON_TIME[lesson.lesson_number],
             subject=lesson.subject,
             cabinet=lesson.cabinet,
             misc_info=lesson.teacher if isinstance(user, Student) else lesson.subclass,
@@ -338,6 +339,7 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
             lessons="\n\n".join(
                 get_text("lesson_format").format(
                     lesson_number=lesson.lesson_number,
+                    lesson_time=LESSON_TIME[lesson.lesson_number],
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
                     misc_info=lesson.teacher
@@ -370,6 +372,7 @@ def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
             lessons="\n\n".join(
                 get_text("lesson_format").format(
                     lesson_number=lesson.lesson_number,
+                    lesson_number=LESSON_TIME[lesson.lesson_number],
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
                     misc_info=lesson.teacher
@@ -422,6 +425,7 @@ def get_timetable_certain_day(update: Update, context: CallbackContext) -> State
             lessons="\n\n".join(
                 get_text("lesson_format").format(
                     lesson_number=lesson.lesson_number,
+                    lesson_time=LESSON_TIME[lesson.lesson_number],
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
                     misc_info=lesson.teacher
@@ -466,6 +470,7 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
                 + "\n\n".join(
                     get_text("lesson_format").format(
                         lesson_number=lesson.lesson_number,
+                        lesson_time=LESSON_TIME[lesson.lesson_number],
                         subject=lesson.subject,
                         cabinet=lesson.cabinet,
                         misc_info=lesson.teacher
