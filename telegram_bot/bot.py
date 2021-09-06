@@ -13,7 +13,7 @@ from telegram.ext import (
 
 import telegram_bot.handlers_v2 as handlers
 from telegram_bot.enums import CallbackEnum, State
-
+from os import path
 
 
 TOKEN_INFO = {
@@ -24,17 +24,22 @@ TOKEN_INFO = {
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
 
+def error_handler(update, error):
+    logger.info("ERROR: {error}")
 
 def run() -> None:
     """Run the bot."""
+    logger.info("Loading properties")
     properties = Properties()
-    with open(".properties", "rb") as config:
+    with open(path.abspath(path.join(path.dirname(__file__), "..", ".properties")), "rb") as config:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
+    logger.info(f"Loading token: {TOKEN_INFO[load_profile()]}")
     updater = Updater(properties[TOKEN_INFO[load_profile()]].data)
+    logger.info(f"Loaded: {properties[TOKEN_INFO[load_profile()]].data}")
 
-    handlers.announce_bot_restart(updater)
-
+    #handlers.announce_bot_restart(updater)
+    logger.info(f"Send announce message")
     updater.dispatcher.add_handler(
         ConversationHandler(
             entry_points=[

@@ -13,6 +13,8 @@ from jproperties import Properties
 from typing import Any, List
 from os import path
 from database.models import User
+from logger_config import logger
+
 
 Base = declarative_base()
 
@@ -20,8 +22,11 @@ def load_profile():
     path_to_file = path.abspath(
         path.join(path.dirname(__file__), "..", "switch_profile")
     )
+    logger.info("Loading profile from switch profile file")
     with open(path_to_file, "r") as f:
-        return f.read()
+        profile = f.read().strip()
+        logger.info(f"Loaded profile: {profile}")
+        return profile
 
 class TelegramUser(Base):
     __tablename__ = load_profile()
@@ -42,7 +47,9 @@ class TelegramAgent:
         with open(
             path.abspath(path.join(path.dirname(__file__), "..", ".properties")), "rb"
         ) as config:
+            logger.info("Reading .properties")
             properties.load(config)
+            logger.info("Properties loaded successfully")
 
         def get_config(key: str) -> Any:
             return properties[key].data
@@ -54,6 +61,7 @@ class TelegramAgent:
         self.engine = create_engine(
             f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}"
         )
+        logger.info("Connected to database")
         self.session = sessionmaker(bind=self.engine)()
 
     def check_if_user_exists(self, telegram_id: int) -> bool:
