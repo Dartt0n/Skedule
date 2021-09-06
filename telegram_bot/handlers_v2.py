@@ -303,7 +303,7 @@ def send_lesson(update, user, lesson, day_of_week):
         7: "в воскресенье",
     }
     text = (
-        "Следующий урок в "
+        "Следующий урок "
         + days[day_of_week]
         + ".\n\n"
         + get_text("lesson_format").format(
