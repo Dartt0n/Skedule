@@ -1,5 +1,5 @@
 from database.telegram import load_profile
-import logging
+from logger_config import logger
 
 from jproperties import Properties
 from telegram.ext import (
@@ -14,14 +14,7 @@ from telegram.ext import (
 import telegram_bot.handlers_v2 as handlers
 from telegram_bot.enums import CallbackEnum, State
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.ERROR,
-    filename="general.log",
-    filemode="w",
-)
-logger = logging.getLogger(__name__)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
+
 
 TOKEN_INFO = {
     "users": "TG_TOKEN",

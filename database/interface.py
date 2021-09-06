@@ -9,8 +9,10 @@ from jproperties import Properties
 from os import path
 from multiprocessing import Process
 from time import sleep
+from logger_config import logger
 
 def clear_cache_with_timer(session, timer):
+    logger.info("Clearing cache")
     session.expire_all()
     sleep(timer)
 
