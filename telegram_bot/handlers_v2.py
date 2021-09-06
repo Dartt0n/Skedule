@@ -372,7 +372,7 @@ def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
             lessons="\n\n".join(
                 get_text("lesson_format").format(
                     lesson_number=lesson.lesson_number,
-                    lesson_number=LESSON_TIME[lesson.lesson_number],
+                    lesson_time=LESSON_TIME[lesson.lesson_number],
                     subject=lesson.subject,
                     cabinet=lesson.cabinet,
                     misc_info=lesson.teacher
