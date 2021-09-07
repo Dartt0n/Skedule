@@ -7,8 +7,6 @@ on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -26,34 +24,33 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: copy secrets
+
+
+      # Runs a set of commands using the runners shell
+      - name: deploy
         run: |
           cp /.properties .
 
-      # Runs a set of commands using the runners shell
-      - name: stop docker container
-        run: |
-          if (docker ps -a --filter=name=skedule-telegram --format="{{.ID}}")
-            then docker stop $(docker ps -a --filter=name=skedule-telegram --format="{{.ID}}");
+          if [[ $(cat switch_profile) == "users" ]];
+            then dockername="skedule-telegram";
+            else dockername="skedule-telegram-debug";
           fi
 
-      - name: remove docker container
-        run: |
-          if (docker ps -a --filter=name=skedule-telegram --format="{{.ID}}")
-            then docker rm $(docker ps -a --filter=name=skedule-telegram --format="{{.ID}}");
+          echo $dockername;
+
+
+          if (docker ps -a --filter=name=$dockername --format="{{.ID}}")
+            then docker stop $(docker ps -a --filter=name=$dockername --format="{{.ID}}");
           fi
 
-      - name: remove docker images
-        run: |
-          if (docker images --filter=reference=skedule-telegram --format "{{.ID}}")
-            then docker image rm $(docker images --filter=reference=skedule-telegram --format "{{.ID}}");
+          if (docker ps -a --filter=name=$dockername --format="{{.ID}}")
+            then docker rm $(docker ps -a --filter=name=$dockername --format="{{.ID}}");
           fi
-      
 
-      - name: build docker container
-        run: |
-          docker build -t skedule-telegram .;
-      
-      - name: start docker container
-        run: |
-          docker run -d --name skedule-telegram skedule-telegram
+          if (docker images --filter=reference=$dockername --format "{{.ID}}")
+            then docker image rm $(docker images --filter=reference=$dockername --format "{{.ID}}");
+          fi
+
+
+          docker build -t $dockername .;
+          docker run -d --name $dockername $dockername;
