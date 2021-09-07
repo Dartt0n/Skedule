@@ -1,19 +1,6 @@
 from typing import List, Dict, Any
 from dataclasses import dataclass
 
-
-@dataclass
-class DatabaseConnection:
-    """
-    Dataclass describing connection to database
-    """
-
-    username: str
-    password: str
-    host: str
-    database_name: str
-
-
 @dataclass
 class DatabaseRow:
     id: int

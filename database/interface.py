@@ -1,58 +1,45 @@
 from jproperties import Properties
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.schema import Table
-from database.models import DatabaseRow, User, DatabaseConnection, TableLesson, TableDay
+from database.models import DatabaseRow, User, TableLesson, TableDay
 from typing import List
 from jproperties import Properties
 from os import path
-from multiprocessing import Process
-from time import sleep
-from logger_config import logger
-
-def clear_cache_with_timer(session, timer):
-    logger.info("Clearing cache")
-    session.expire_all()
-    sleep(timer)
 
 class Agent:
-    def __init__(self, db_conn: DatabaseConnection = None) -> None:
+    def __init__(self) -> None:
         """
         Agent is need to access database, encapsulating sqlalchemy methods
         """
 
-        if db_conn is None:
-            properties = Properties()
-            with open(
-                path.abspath(path.join(path.dirname(__file__), "..", ".properties")),
-                "rb",
-            ) as config:
-                properties.load(config)
+        properties = Properties()
+        with open(
+            path.abspath(path.join(path.dirname(__file__), "..", ".properties")),
+            "rb",
+        ) as config:
+            properties.load(config)
 
-            def get_config(key: str):
-                return properties[key].data
+        def get_config(key: str):
+            return properties[key].data
 
-            DB_USER_NAME = get_config("DB_TG_USER_NAME")
-            DB_DATABASE_NAME = get_config("DB_DATABASE_NAME")
-            DB_USER_PASSWORD = get_config("DB_TG_USER_PASSWORD")
-            DB_DATABASE_HOST = get_config("DB_DATABASE_HOST")
+        DB_USER_NAME = get_config("DB_TG_USER_NAME")
+        DB_DATABASE_NAME = get_config("DB_DATABASE_NAME")
+        DB_USER_PASSWORD = get_config("DB_TG_USER_PASSWORD")
+        DB_DATABASE_HOST = get_config("DB_DATABASE_HOST")
 
-            self.__engine = create_engine(
-                f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}"
-            )
-        else:
-            self.__engine = create_engine(  # connect to remote database server
-                f"mariadb+mariadbconnector://{db_conn.username}:{db_conn.password}@{db_conn.host}:3306/{db_conn.database_name}"
-            )
+        self.__engine = create_engine(
+            f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}",
+            isolation_level="READ UNCOMMITTED"
+        )
         # create database and configure it with engine
         self.__base = declarative_base()
         self.__base.metadata.reflect(self.__engine)
         # create session. `sessionmaker` return class, so we need use `()` to create an object
-        self.__session = sessionmaker(bind=self.__engine)()
-
-        clear_cache_process = Process(target=lambda: clear_cache_with_timer(self.__session, 3600))
-        clear_cache_process.start()
+        self.__session: Session = sessionmaker(bind=self.__engine)()
+        self.__session.execute("SET SESSION query_cache_type = OFF")
 
 
     def __get_table(self, user: User) -> Table:
