@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from telegram.utils.types import DVInput
-
 from database.interface import Agent
 from database.models import Student
 from database.telegram import TelegramAgent
@@ -47,7 +45,7 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
-announcements = map(lambda text: "  " + text, get_json("announcements.json")["data"])
+announcements = list(map(lambda text: " ● " + text, get_json("announcements.json")["data"]))
 
 
 def get_text(text):
@@ -88,8 +86,8 @@ def start_command_handler(update: Update, context: CallbackContext) -> State:
         text=get_text("greeting"),
         reply_markup=markup_from(
             [
-                [("Ученик", CallbackEnum.IM_STUDENT)],  # buttons for students
-                [("Учитель", CallbackEnum.IM_TEACHER)],  # and for teachers
+                [("Ученик", CallbackEnum.IM_STUDENT.value)],  # buttons for students
+                [("Учитель", CallbackEnum.IM_TEACHER.value)],  # and for teachers
             ]
         ),
     )
@@ -104,12 +102,12 @@ def choose_parallel(update: Update, context: CallbackContext) -> State:
         reply_markup=markup_from(
             [
                 [
-                    ("8 класс", "{}_8".format(CallbackEnum.PARALLEL)),
-                    ("9 класс", "{}_9".format(CallbackEnum.PARALLEL)),
+                    ("8 класс", "{}_8".format(CallbackEnum.PARALLEL.value)),
+                    ("9 класс", "{}_9".format(CallbackEnum.PARALLEL.value)),
                 ],
                 [
-                    ("10 класс", "{}_10".format(CallbackEnum.PARALLEL)),
-                    ("11 класс", "{}_11".format(CallbackEnum.PARALLEL)),
+                    ("10 класс", "{}_10".format(CallbackEnum.PARALLEL.value)),
+                    ("11 класс", "{}_11".format(CallbackEnum.PARALLEL.value)),
                 ],
             ]
         ),
@@ -118,7 +116,8 @@ def choose_parallel(update: Update, context: CallbackContext) -> State:
 
 
 def choose_letter(update: Update, context: CallbackContext) -> State:
-    # scrap data from callback_data
+    # scrap data from callback_data\
+    print("1")
     parallel = update.callback_query.data.split("_")[-1]
     context.user_data["USER_PARALLEL"] = parallel  # save user data
     update_query(
@@ -127,7 +126,10 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
         reply_markup=markup_from(
             [
                 [
-                    (f"{letter}", "{}_{}".format(CallbackEnum.LETTER, letter.lower()))
+                    (
+                        f"{letter}",
+                        "{}_{}".format(CallbackEnum.LETTER.value, letter.lower()),
+                    )
                     for letter in letter_list
                 ]
                 for letter_list in ["АБВГДЕ", "ЖЗИЙКЛ", "МНОПРС", "ТУФХЦ", "ЧШЭЮЯ"]
@@ -146,8 +148,8 @@ def choose_group(update: Update, context: CallbackContext) -> State:
         text=get_text("enter_subclass"),
         reply_markup=markup_from(
             [
-                [("1 группа", "{}_1".format(CallbackEnum.GROUP))],
-                [("2 группа", "{}_2".format(CallbackEnum.GROUP))],
+                [("1 группа", "{}_1".format(CallbackEnum.GROUP.value))],
+                [("2 группа", "{}_2".format(CallbackEnum.GROUP.value))],
             ]
         ),
     )
@@ -169,8 +171,8 @@ def confirm_subclass(update: Update, context: CallbackContext) -> State:
         text=get_text("confirm_class").format(subclass=subclass.capitalize()),
         reply_markup=markup_from(
             [
-                [("Да, верно", CallbackEnum.CONFIRM_SUBCLASS)],
-                [("Нет, я хочу изменить", CallbackEnum.CHANGE_SUBCLASS)],
+                [("Да, верно", CallbackEnum.CONFIRM_SUBCLASS.value)],
+                [("Нет, я хочу изменить", CallbackEnum.CHANGE_SUBCLASS.value)],
             ]
         ),
     )
@@ -213,8 +215,8 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
         text=get_text("confirm_name").format(teacher_name=name),
         reply_markup=markup_from(
             [
-                [("Да, все верно", CallbackEnum.CONFIRM_NAME)],
-                [("Нет, я хочу изменить", CallbackEnum.CHANGE_NAME)],
+                [("Да, все верно", CallbackEnum.CONFIRM_NAME.value)],
+                [("Нет, я хочу изменить", CallbackEnum.CHANGE_NAME.value)],
             ]
         ),
     )
@@ -316,9 +318,6 @@ def send_lesson(update, user, lesson, day_of_week):
     )
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
-
-
-2
 
 
 def get_timetable_today(update: Update, context: CallbackContext) -> State:
@@ -466,7 +465,9 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
         update=update,
         text="\n\n".join(
             (
-                "-"*30+"\n*"+(days[day.day_of_week]+"*" + "\n\n")
+                "-" * 30
+                + "\n*"
+                + (days[day.day_of_week] + "*" + "\n\n")
                 + "\n\n".join(
                     get_text("lesson_format").format(
                         lesson_number=lesson.lesson_number,

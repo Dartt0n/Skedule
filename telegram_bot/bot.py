@@ -16,29 +16,31 @@ from telegram_bot.enums import CallbackEnum, State
 from os import path
 
 
-TOKEN_INFO = {
-    "users": "TG_TOKEN",
-    "debug_users": "TG_TEST_TOKEN"
-}
+TOKEN_INFO = {"users": "TG_TOKEN", "debug_users": "TG_TEST_TOKEN"}
+
 
 def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
 
+
 def error_handler(update, error):
     logger.info("ERROR: {error}")
+
 
 def run() -> None:
     """Run the bot."""
     logger.info("Loading properties")
     properties = Properties()
-    with open(path.abspath(path.join(path.dirname(__file__), "..", ".properties")), "rb") as config:
+    with open(
+        path.abspath(path.join(path.dirname(__file__), "..", ".properties")), "rb"
+    ) as config:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
     logger.info(f"Loading token: {TOKEN_INFO[load_profile()]}")
     updater = Updater(properties[TOKEN_INFO[load_profile()]].data)
     logger.info(f"Loaded: {properties[TOKEN_INFO[load_profile()]].data}")
 
-    #handlers.announce_bot_restart(updater)
+    handlers.announce_bot_restart(updater)
     logger.info(f"Send announce message")
     updater.dispatcher.add_handler(
         ConversationHandler(
@@ -58,10 +60,22 @@ def run() -> None:
                         callback=handlers.choose_parallel,
                     ),
                 ],
-                State.PARALLEL_ENTERED: [CallbackQueryHandler(handlers.choose_letter)],
-                State.LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group)],
-                State.LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group)],
-                State.GROUP_ENTERED: [CallbackQueryHandler(handlers.confirm_subclass)],
+                State.PARALLEL_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.PARALLEL.value}_([0-9]|10|11)$",
+                        callback=handlers.choose_letter,
+                    ),
+                ],
+                State.LETTER_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.LETTER.value}",
+                        callback=handlers.choose_group,
+                    )
+                ],
+                State.GROUP_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.GROUP.value}",
+                        callback=handlers.confirm_subclass)],
                 State.CONFIRM_SUBCLASS: [
                     CallbackQueryHandler(
                         pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS),
