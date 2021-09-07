@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from telegram.utils.types import DVInput
-
 from database.interface import Agent
 from database.models import Student
 from database.telegram import TelegramAgent
@@ -47,7 +45,7 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
-announcements = map(lambda text: "  " + text, get_json("announcements.json")["data"])
+announcements = list(map(lambda text: " ● " + text, get_json("announcements.json")["data"]))
 
 
 def get_text(text):
@@ -119,7 +117,7 @@ def choose_parallel(update: Update, context: CallbackContext) -> State:
 
 def choose_letter(update: Update, context: CallbackContext) -> State:
     # scrap data from callback_data\
-    print('1')
+    print("1")
     parallel = update.callback_query.data.split("_")[-1]
     context.user_data["USER_PARALLEL"] = parallel  # save user data
     update_query(
@@ -128,7 +126,10 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
         reply_markup=markup_from(
             [
                 [
-                    (f"{letter}", "{}_{}".format(CallbackEnum.LETTER.value, letter.lower()))
+                    (
+                        f"{letter}",
+                        "{}_{}".format(CallbackEnum.LETTER.value, letter.lower()),
+                    )
                     for letter in letter_list
                 ]
                 for letter_list in ["АБВГДЕ", "ЖЗИЙКЛ", "МНОПРС", "ТУФХЦ", "ЧШЭЮЯ"]
@@ -464,7 +465,9 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
         update=update,
         text="\n\n".join(
             (
-                "-"*30+"\n*"+(days[day.day_of_week]+"*" + "\n\n")
+                "-" * 30
+                + "\n*"
+                + (days[day.day_of_week] + "*" + "\n\n")
                 + "\n\n".join(
                     get_text("lesson_format").format(
                         lesson_number=lesson.lesson_number,
