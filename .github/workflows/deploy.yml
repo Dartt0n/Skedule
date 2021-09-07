@@ -32,22 +32,22 @@ jobs:
           cp /.properties .
 
           if [[ $(cat switch_profile) == "users" ]];
-            then dockername="skedule-telegram";
-            else dockername="skedule-telegram-debug";
+            then export dockername="skedule-telegram";
+            else export dockername="skedule-telegram-debug";
           fi
 
           echo $dockername;
 
 
-          if (docker ps -a --filter=name=$dockername --format="{{.ID}}")
+          if [[ $(docker ps -a --filter=name=$dockername --format="{{.ID}}") ]]
             then docker stop $(docker ps -a --filter=name=$dockername --format="{{.ID}}");
           fi
 
-          if (docker ps -a --filter=name=$dockername --format="{{.ID}}")
+          if [[ $(docker ps -a --filter=name=$dockername --format="{{.ID}}") ]]
             then docker rm $(docker ps -a --filter=name=$dockername --format="{{.ID}}");
           fi
 
-          if (docker images --filter=reference=$dockername --format "{{.ID}}")
+          if [[ $(docker images --filter=reference=$dockername --format="{{.ID}}") ]]
             then docker image rm $(docker images --filter=reference=$dockername --format "{{.ID}}");
           fi
 
