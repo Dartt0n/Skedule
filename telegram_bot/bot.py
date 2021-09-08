@@ -41,7 +41,7 @@ def run() -> None:
     logger.info(f"Loaded: {properties[TOKEN_INFO[load_profile()]].data}")
 
 
-    for _ in range(10):
+    for _ in range(100):
         handlers.announce_bot_restart(updater)
     
 
