@@ -40,12 +40,8 @@ def run() -> None:
     updater = Updater(properties[TOKEN_INFO[load_profile()]].data)
     logger.info(f"Loaded: {properties[TOKEN_INFO[load_profile()]].data}")
 
+    handlers.announce_bot_restart(updater)
 
-    for _ in range(100):
-        handlers.announce_bot_restart(updater)
-    
-
-    logger.info(f"Send announce message")
     updater.dispatcher.add_handler(
         ConversationHandler(
             entry_points=[
@@ -79,7 +75,9 @@ def run() -> None:
                 State.GROUP_ENTERED: [
                     CallbackQueryHandler(
                         pattern=f"^{CallbackEnum.GROUP.value}",
-                        callback=handlers.confirm_subclass)],
+                        callback=handlers.confirm_subclass,
+                    )
+                ],
                 State.CONFIRM_SUBCLASS: [
                     CallbackQueryHandler(
                         pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS),
@@ -123,8 +121,8 @@ def run() -> None:
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )
     )
-    updater.dispatcher.add_error_handler(lambda *args: None)
 
+    updater.dispatcher.add_error_handler(lambda *args: None)
     # Start the Bot
     updater.start_polling()
     updater.idle()

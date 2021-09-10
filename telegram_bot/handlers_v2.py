@@ -16,6 +16,7 @@ from telegram_bot.support_functions import (
     markup_from,
     update_query,
 )
+from logger_config import logger
 
 LESSON_TIME = {
     1: "9:00 - 9:40",
@@ -45,7 +46,9 @@ MAIN_MENU_MARKUP = markup_from(
 
 
 texts = get_json("texts.json")
-announcements = list(map(lambda text: " ● " + text, get_json("announcements.json")["data"]))
+announcements = list(
+    map(lambda text: " ● " + text, get_json("announcements.json")["data"])
+)
 
 
 def get_text(text):
@@ -54,13 +57,13 @@ def get_text(text):
 
 def announce_bot_restart(updater: Updater):
     for telegram_id in DBTG.get_chats():
+        logger.info(f"Send announcement to {telegram_id}")
         updater.bot.send_message(
             chat_id=telegram_id,
             text=get_text("update_text")
             + get_text("last_update")
             + get_text("restart_message"),
         )
-
 
 def main_menu(update: Update, context, first_time=False) -> State:
     update_query(
@@ -117,7 +120,6 @@ def choose_parallel(update: Update, context: CallbackContext) -> State:
 
 def choose_letter(update: Update, context: CallbackContext) -> State:
     # scrap data from callback_data\
-    print("1")
     parallel = update.callback_query.data.split("_")[-1]
     context.user_data["USER_PARALLEL"] = parallel  # save user data
     update_query(
@@ -183,11 +185,13 @@ def save_subclass_to_database(update: Update, context: CallbackContext) -> State
     subclass = context.user_data["SUBCLASS"]
     telegram_id = get_telegram_id(update)
     if not DBTG.check_if_user_exists(telegram_id):
+        logger.info(f"User {telegram_id} registered with subclass {subclass}")
         # this is new user, so we create new row in database
         DBTG.create_new_user(
             telegram_id=telegram_id, is_student=True, subclass=subclass
         )
     else:
+        logger.info(f"User {telegram_id} changed his subclass to {subclass}")
         # this is old user, update row
         DBTG.change_subclass(telegram_id=telegram_id, subclass=subclass)
     # return main menu
@@ -228,10 +232,12 @@ def save_teacher_name_to_database(update: Update, context: CallbackContext) -> S
     telegram_id = get_telegram_id(update)
     if not DBTG.check_if_user_exists(telegram_id):
         # new teacher
+        logger.info(f"User {telegram_id} registered with name {name}")
         DBTG.create_new_user(
             telegram_id=telegram_id, is_student=False, teacher_name=name
         )
     else:
+        logger.info(f"User {telegram_id} changed his name to {name}")
         # old user
         DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
     return main_menu(update, context, True)
@@ -255,7 +261,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
         timetable = AGENT.get_day(user, day_of_week)  # today
     else:  # afer lessons
         # timetable = AGENT.get_day(user, day_of_week + 1)  # next day
-        days = AGENT.get_week(user)[day_of_week:]  # timetable for monday
+        days = AGENT.get_week(user)[day_of_week:].extend(AGENT.get_week(user)[:day_of_week-1]) # next days
         for d_timetable in days:
             if d_timetable.lessons:
                 day_of_week = d_timetable.day_of_week
@@ -279,7 +285,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
         # check_group(timetable, 1, lesson)
         send_lesson(update, user, lesson, timetable.day_of_week)
 
-    update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
+    #update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
 
@@ -304,6 +310,12 @@ def send_lesson(update, user, lesson, day_of_week):
         6: "в субботу",
         7: "в воскресенье",
     }
+    
+    telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) asked for lessons \"{days[day_of_week]}\"")
+
     text = (
         "Следующий урок "
         + days[day_of_week]
@@ -324,6 +336,10 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     timetable = AGENT.get_day(user, get_current_day_of_week())
 
+    telegram_id = get_telegram_id(update)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) asked for lessons today (DOW: {get_current_day_of_week()})")
+    
     if not timetable.lessons:
         update_query(
             update=update,
@@ -356,6 +372,10 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
 def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
     user = DBTG.get_user(get_telegram_id(update))
     timetable = AGENT.get_day(user, get_current_day_of_week() % 7 + 1)
+
+    telegram_id = get_telegram_id(update)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) asked for lessons tommorow (DOW: {get_current_day_of_week() % 7 + 1})")
 
     if not timetable.lessons:
         update_query(
@@ -407,7 +427,7 @@ def select_day_of_week(update: Update, context: CallbackContext) -> State:
 def get_timetable_certain_day(update: Update, context: CallbackContext) -> State:
     day_of_week = update.callback_query.data.split("_")[-1]
     user = DBTG.get_user(get_telegram_id(update))
-    timetable = AGENT.get_day(user, day_of_week)
+    timetable = AGENT.get_day(user, int(day_of_week))
     days = {
         "1": "понедельник",
         "2": "вторник",
@@ -417,6 +437,11 @@ def get_timetable_certain_day(update: Update, context: CallbackContext) -> State
         "6": "субботу",
         "7": "воскресенье",
     }
+
+    telegram_id = get_telegram_id(update)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) asked for lessons in certain day (DOW: {day_of_week})")
+
     update_query(
         update=update,
         text=get_text("certain_day_timetable").format(
@@ -453,6 +478,11 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
     }
     user = DBTG.get_user(get_telegram_id(update))
     timetable = AGENT.get_week(user)
+
+    telegram_id = get_telegram_id(update)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) asked for lessons for week")
+
 
     if all(map(lambda x: x.lessons != [], timetable)):
         update_query(
@@ -500,16 +530,28 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
                 #    ("Найти учителя", CallbackEnum.FIND_TEACHER),
                 # ],
                 [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
-                [("Полезные материалы", CallbackEnum.HELPFUL_MATERIALS)],
-                [("Туториалы", CallbackEnum.TUTORIALS)],
-                [("Тех. Помощь", CallbackEnum.HELP)],
+                [("Расписание звонков/столовой", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+                [("Написать разработчикам", CallbackEnum.HELP)],
+                [("Поддержать разработчиков", CallbackEnum.DONAT)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+                [(" ----> ", CallbackEnum.MISC_MENU_SECOND)]
             ]
         ),
     )
     return State.MISC_MENU
 
+def misc_menu_second(update: Update, context: CallbackContext) -> State:
+    update_query(
+        update=update,
+        text=get_text("misc_menu"),
+        reply_markup=markup_from(
+            [
+                [(" <---- ", CallbackEnum.MISC_MENU_FIRST)]
+            ]
+        )
+    )
+    return State.MISC_MENU
 
 def find_teacher(update: Update, context: CallbackContext) -> State:
     return State.MISC_MENU
@@ -520,6 +562,13 @@ def find_subclass(update: Update, context: CallbackContext) -> State:
 
 
 def announcements_handler(update: Update, context: CallbackContext) -> State:
+
+    telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) checked announcements")
+
+
     update_query(
         update=update, text="\n\n".join(announcements), reply_markup=MAIN_MENU_MARKUP
     )
@@ -540,14 +589,25 @@ def helpful_materials(update: Update, context: CallbackContext) -> State:
     return State.HELP_MENU
 
 
-def tutorials(update: Update, context: CallbackContext) -> State:
+def donat_message(update: Update, context: CallbackContext) -> State:
+    telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) checked donat text")
+
     update_query(
-        update=update, text=get_text("tutorials"), reply_markup=MAIN_MENU_MARKUP
+        update=update, text=get_text("donat_message"), reply_markup=MAIN_MENU_MARKUP
     )
     return State.MAIN_MENU
 
 
 def rings(update: Update, context: CallbackContext) -> State:
+    telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) checked rings text")
+
+
     update_query(
         update=update, text=get_text("rings_timetable"), reply_markup=MAIN_MENU_MARKUP
     )
@@ -555,13 +615,23 @@ def rings(update: Update, context: CallbackContext) -> State:
 
 
 def canteen(update: Update, context: CallbackContext) -> State:
+    telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) checked canteen text")
+
     update_query(
         update=update, text=get_text("canteen_timetable"), reply_markup=MAIN_MENU_MARKUP
     )
     return State.MAIN_MENU
 
 
-def technical_support(update: Update, context: CallbackContext) -> State:
+def connect_to_devs(update: Update, context: CallbackContext) -> State:
+    telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
+    info = user.subclass if isinstance(user, Student) else user.name
+    logger.info(f"User {telegram_id} ({info}) checked devs info")
+
     update_query(
         update=update,
         text=get_text("help_message").format(telegram_id=get_telegram_id(update)),
@@ -571,7 +641,7 @@ def technical_support(update: Update, context: CallbackContext) -> State:
 
 
 def change_info(update: Update, context: CallbackContext) -> State:
-    telegram_id = get_telegram_id(update)
+    # telegram_id = get_telegram_id(update)
     # if isinstance(DBTG.get_user(telegram_id), Student):
     #     return choose_parallel(update, context)
     # else:
@@ -604,6 +674,7 @@ def main_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.MISC_MENU:
         return misc_menu(update, context)
     else:
+        logger.error(f"Unknown event: {event}")
         return State.MAIN_MENU
 
 
@@ -618,14 +689,19 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.HELPFUL_MATERIALS:
         return helpful_materials(update, context)
     elif event == CallbackEnum.HELP:
-        return technical_support(update, context)
-    elif event == CallbackEnum.TUTORIALS:
-        return tutorials(update, context)
+        return connect_to_devs(update, context)
+    elif event == CallbackEnum.DONAT:
+        return donat_message(update, context)
     elif event == CallbackEnum.CHANGE_INFORMATION:
         return change_info(update, context)
     elif event == CallbackEnum.MAIN_MENU:
         return main_menu(update, context)
+    elif event == CallbackEnum.MISC_MENU_SECOND:
+        return misc_menu_second(update, context)
+    elif event == CallbackEnum.MISC_MENU_FIRST:
+        return misc_menu(update, context)
     else:
+        logger.error(f"Unknown event: {event}")
         return State.MISC_MENU
 
 
@@ -635,4 +711,6 @@ def help_menu_distributor(update: Update, context: CallbackContext):
         return canteen(update, context)
     elif event == CallbackEnum.RINGS:
         return rings(update, context)
-    return State.HELP_MENU
+    else:
+        logger.error(f"Unknown event: {event}")
+        return State.HELP_MENU

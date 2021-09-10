@@ -53,11 +53,15 @@ class CallbackEnum(AutoName):
     FIND_TEACHER_CERTAIN_DAY = auto()
     # help menu
     TECHNICAL_SUPPORT = auto()
-    TUTORIALS = auto()
+    DONAT = auto()
     EXAMPLES = auto()
     FAQ = auto()
     CARTEEN = auto()
     RINGS = auto()
+    # 
+    MISC_MENU_FIRST = auto()
+    MISC_MENU_SECOND = auto()
+
 
 
 class State(AutoName):

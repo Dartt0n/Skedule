@@ -22,7 +22,6 @@ def load_profile():
     path_to_file = path.abspath(
         path.join(path.dirname(__file__), "..", "switch_profile")
     )
-    logger.info("Loading profile from switch profile file")
     with open(path_to_file, "r") as f:
         profile = f.read().strip()
         logger.info(f"Loaded profile: {profile}")
