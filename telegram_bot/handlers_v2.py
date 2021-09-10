@@ -63,6 +63,7 @@ def announce_bot_restart(updater: Updater):
             text=get_text("update_text")
             + get_text("last_update")
             + get_text("restart_message"),
+            parse_mode="markdown"
         )
 
 def main_menu(update: Update, context, first_time=False) -> State:
@@ -81,7 +82,7 @@ def start_command_handler(update: Update, context: CallbackContext) -> State:
     if DBTG.check_if_user_exists(telegram_chat_id):
         # user is already registered
         update.message.reply_text(
-            text=get_text("help_on_startup"), reply_markup=MAIN_MENU_MARKUP
+            text=get_text("help_on_startup"), reply_markup=MAIN_MENU_MARKUP, parse_mode="markdown"
         )
         return State.MAIN_MENU  # return user to main menu
     # user is not registered, ask if user is a teacher or a student
@@ -93,6 +94,7 @@ def start_command_handler(update: Update, context: CallbackContext) -> State:
                 [("Учитель", CallbackEnum.IM_TEACHER.value)],  # and for teachers
             ]
         ),
+        parse_mode="markdown"
     )
     return State.LOGIN  # as user is not registred we send him to login state
 
@@ -314,7 +316,7 @@ def send_lesson(update, user, lesson, day_of_week):
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) asked for lessons \"{days[day_of_week]}\"")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons \"{days[day_of_week]}\"")
 
     text = (
         "Следующий урок "
@@ -338,7 +340,7 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) asked for lessons today (DOW: {get_current_day_of_week()})")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons today (DOW: {get_current_day_of_week()})")
     
     if not timetable.lessons:
         update_query(
@@ -375,7 +377,7 @@ def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) asked for lessons tommorow (DOW: {get_current_day_of_week() % 7 + 1})")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons tommorow (DOW: {get_current_day_of_week() % 7 + 1})")
 
     if not timetable.lessons:
         update_query(
@@ -440,7 +442,7 @@ def get_timetable_certain_day(update: Update, context: CallbackContext) -> State
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) asked for lessons in certain day (DOW: {day_of_week})")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons in certain day (DOW: {day_of_week})")
 
     update_query(
         update=update,
@@ -481,7 +483,7 @@ def get_timetable_week(update: Update, context: CallbackContext) -> State:
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) asked for lessons for week")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons for week")
 
 
     if all(map(lambda x: x.lessons != [], timetable)):
@@ -533,7 +535,7 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
                 [("Расписание звонков/столовой", CallbackEnum.HELPFUL_MATERIALS)],
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
                 [("Написать разработчикам", CallbackEnum.HELP)],
-                [("Поддержать разработчиков", CallbackEnum.DONAT)],
+                [("Поддержать разработчиков", CallbackEnum.DONATE)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
                 [(" ----> ", CallbackEnum.MISC_MENU_SECOND)]
             ]
@@ -566,7 +568,7 @@ def announcements_handler(update: Update, context: CallbackContext) -> State:
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) checked announcements")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] checked announcements")
 
 
     update_query(
@@ -589,14 +591,14 @@ def helpful_materials(update: Update, context: CallbackContext) -> State:
     return State.HELP_MENU
 
 
-def donat_message(update: Update, context: CallbackContext) -> State:
+def donate_message(update: Update, context: CallbackContext) -> State:
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) checked donat text")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] checked donat text")
 
     update_query(
-        update=update, text=get_text("donat_message"), reply_markup=MAIN_MENU_MARKUP
+        update=update, text=get_text("donate_message"), reply_markup=MAIN_MENU_MARKUP
     )
     return State.MAIN_MENU
 
@@ -605,7 +607,7 @@ def rings(update: Update, context: CallbackContext) -> State:
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) checked rings text")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] checked rings text")
 
 
     update_query(
@@ -618,7 +620,7 @@ def canteen(update: Update, context: CallbackContext) -> State:
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) checked canteen text")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] checked canteen text")
 
     update_query(
         update=update, text=get_text("canteen_timetable"), reply_markup=MAIN_MENU_MARKUP
@@ -630,7 +632,7 @@ def connect_to_devs(update: Update, context: CallbackContext) -> State:
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
-    logger.info(f"User {telegram_id} ({info}) checked devs info")
+    logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] checked devs info")
 
     update_query(
         update=update,
@@ -674,7 +676,10 @@ def main_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.MISC_MENU:
         return misc_menu(update, context)
     else:
-        logger.error(f"Unknown event: {event}")
+        telegram_id = get_telegram_id(update)
+        user = DBTG.get_user(telegram_id)
+        info = user.subclass if isinstance(user, Student) else user.name
+        logger.error(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] got unknown event: {event}")
         return State.MAIN_MENU
 
 
@@ -690,8 +695,8 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
         return helpful_materials(update, context)
     elif event == CallbackEnum.HELP:
         return connect_to_devs(update, context)
-    elif event == CallbackEnum.DONAT:
-        return donat_message(update, context)
+    elif event == CallbackEnum.DONATE:
+        return donate_message(update, context)
     elif event == CallbackEnum.CHANGE_INFORMATION:
         return change_info(update, context)
     elif event == CallbackEnum.MAIN_MENU:
@@ -701,7 +706,10 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.MISC_MENU_FIRST:
         return misc_menu(update, context)
     else:
-        logger.error(f"Unknown event: {event}")
+        telegram_id = get_telegram_id(update)
+        user = DBTG.get_user(telegram_id)
+        info = user.subclass if isinstance(user, Student) else user.name
+        logger.error(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] got unknown event: {event}")
         return State.MISC_MENU
 
 
@@ -712,5 +720,8 @@ def help_menu_distributor(update: Update, context: CallbackContext):
     elif event == CallbackEnum.RINGS:
         return rings(update, context)
     else:
-        logger.error(f"Unknown event: {event}")
+        telegram_id = get_telegram_id(update)
+        user = DBTG.get_user(telegram_id)
+        info = user.subclass if isinstance(user, Student) else user.name
+        logger.error(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] got unknown event: {event}")
         return State.HELP_MENU
