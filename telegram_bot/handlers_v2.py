@@ -1,4 +1,5 @@
 from datetime import datetime
+from os import path
 from time import sleep
 from database.interface import Agent
 from database.models import Student
@@ -56,13 +57,15 @@ def get_text(text):
 
 
 def announce_bot_restart(updater: Updater):
+    with open(
+        path.abspath(path.join(path.dirname(__file__), "..", "resources", "update_message.md")), "r"
+    ) as f:
+        text = f.read()
     for telegram_id in DBTG.get_chats():
         logger.info(f"Send announcement to {telegram_id}")
         updater.bot.send_message(
             chat_id=telegram_id,
-            text=get_text("update_text")
-            + get_text("last_update")
-            + get_text("restart_message"),
+            text=text,
             parse_mode="markdown",
         )
         sleep(0.5)
