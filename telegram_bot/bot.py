@@ -1,3 +1,4 @@
+from telegram.ext.callbackcontext import CallbackContext
 from database.telegram import load_profile
 from logger_config import logger
 
@@ -23,8 +24,8 @@ def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
 
 
-def error_handler(update, error):
-    logger.info("ERROR: {error}")
+def error_handler(update, error: CallbackContext):
+    logger.error(f"{error.error}")
 
 
 def run() -> None:
@@ -119,12 +120,24 @@ def run() -> None:
                 State.MISC_MENU_SECOND: [
                     CallbackQueryHandler(handlers.misc_menu_second_distributor)
                 ],
+                State.SEARCH_PARALLLEL_ENTERED: [CallbackQueryHandler(handlers.choose_letter_for_search)],
+                State.SEARCH_LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group_for_search)],
+                State.SEARCH_SUBCLASS: [CallbackQueryHandler(handlers.search_subclass)],
+                State.SEARCH_SUBCLASS_MENU: [CallbackQueryHandler(handlers.search_menu_distribution)],
+                State.SEARCH_FOR_DAY_OF_WEEK: [CallbackQueryHandler(handlers.search_for_day_of_week)],
+                State.SEARCH_NAME_ENTERED: [
+                    MessageHandler(
+                        filters=Filters.regex(
+                            f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s*[А-ЯЁ]\.\s*[А-ЯЁ]\.\s*$"
+                        ),
+                        callback=handlers.search_name_entered)
+                    ],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )
     )
 
-    updater.dispatcher.add_error_handler(lambda *args: None)
+    updater.dispatcher.add_error_handler(error_handler)
     # Start the Bot
     updater.start_polling()
     updater.idle()

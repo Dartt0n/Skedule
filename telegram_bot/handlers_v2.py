@@ -2,7 +2,7 @@ from datetime import datetime
 from os import path
 from time import sleep
 from database.interface import Agent
-from database.models import Student
+from database.models import Student, Teacher
 from database.telegram import TelegramAgent
 from datetimerange import DateTimeRange
 from telegram import Update
@@ -255,8 +255,8 @@ def save_teacher_name_to_database(update: Update, context: CallbackContext) -> S
     return main_menu(update, context, True)
 
 
-def get_next_lesson(update: Update, context: CallbackContext) -> State:
-    user = DBTG.get_user(get_telegram_id(update))
+def get_next_lesson(update: Update, context: CallbackContext, wanted=None) -> State:
+    user = DBTG.get_user(get_telegram_id(update)) if wanted is None else wanted
     lesson_number = get_lesson_number(datetime.now())  # current lesson
     day_of_week = get_current_day_of_week()
     if lesson_number != -1:  # find lesson
@@ -266,7 +266,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
                 if lesson_t.lesson_number > lesson_number:  # search first after current
                     lesson = lesson_t  # found lesson
                     # check_group(timetable, i, lesson)
-                    return send_lesson(update, user, lesson, day_of_week)
+                    return send_lesson(update, user, lesson, day_of_week, wanted)
             else:
                 timetable = AGENT.get_day(user, day_of_week + 1)
     elif datetime.now() in DateTimeRange("0:00", "8:14"):  # early morning
@@ -290,13 +290,13 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
                     day_of_week = timetable.day_of_week
                     lesson = timetable.lessons[0]
                     # check_group(timetable, 1, lesson)
-                    return send_lesson(update, user, lesson, day_of_week)
+                    return send_lesson(update, user, lesson, day_of_week, wanted)
         # wrong parameters
         text = get_text("can_not_find_next_lesson")
     else:  # there is some lessons
         lesson = timetable.lessons[0]
         # check_group(timetable, 1, lesson)
-        send_lesson(update, user, lesson, timetable.day_of_week)
+        send_lesson(update, user, lesson, timetable.day_of_week, wanted)
 
     # update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
@@ -313,7 +313,7 @@ def check_group(timetable, i, lesson):
     lesson.subclass = ", ".join(groups)
 
 
-def send_lesson(update, user, lesson, day_of_week):
+def send_lesson(update, user, lesson, day_of_week, wanted):
     days = {
         1: "в понедельник",
         2: "во вторник",
@@ -342,13 +342,24 @@ def send_lesson(update, user, lesson, day_of_week):
             cabinet=lesson.cabinet,
             misc_info=lesson.teacher if isinstance(user, Student) else lesson.subclass,
         )
+    ) if wanted is None else (
+        f"Следующий урок у {'учителя '+wanted.name if isinstance(wanted, Teacher) else 'класса '+wanted.subclass} "
+        + days[day_of_week]
+        + ".\n\n"
+        + get_text("lesson_format").format(
+            lesson_number=lesson.lesson_number,
+            lesson_time=LESSON_TIME[lesson.lesson_number],
+            subject=lesson.subject,
+            cabinet=lesson.cabinet,
+            misc_info=lesson.teacher if isinstance(wanted, Student) else lesson.subclass,
+        )
     )
     update_query(update=update, text=text, reply_markup=MAIN_MENU_MARKUP)
     return State.MAIN_MENU
 
 
-def get_timetable_today(update: Update, context: CallbackContext) -> State:
-    user = DBTG.get_user(get_telegram_id(update))
+def get_timetable_today(update: Update, context: CallbackContext, wanted=None) -> State:
+    user = DBTG.get_user(get_telegram_id(update)) if wanted is None else wanted
     timetable = AGENT.get_day(user, get_current_day_of_week())
 
     telegram_id = get_telegram_id(update)
@@ -380,14 +391,32 @@ def get_timetable_today(update: Update, context: CallbackContext) -> State:
                 )
                 for lesson in timetable.lessons
             )
+        )
+        if wanted is None
+        else get_text("wanted_today_timetable").format(
+            wanted=wanted.name if isinstance(wanted, Teacher) else wanted.subclass,
+            lessons="\n\n".join(
+                get_text("lesson_format").format(
+                    lesson_number=lesson.lesson_number,
+                    lesson_time=LESSON_TIME[lesson.lesson_number],
+                    subject=lesson.subject,
+                    cabinet=lesson.cabinet,
+                    misc_info=lesson.teacher
+                    if isinstance(user, Student)
+                    else lesson.subclass,
+                )
+                for lesson in timetable.lessons
+            ),
         ),
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
 
 
-def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
-    user = DBTG.get_user(get_telegram_id(update))
+def get_timetable_tommorow(
+    update: Update, context: CallbackContext, wanted=None
+) -> State:
+    user = DBTG.get_user(get_telegram_id(update)) if wanted is None else wanted
     timetable = AGENT.get_day(user, get_current_day_of_week() % 7 + 1)
 
     telegram_id = get_telegram_id(update)
@@ -419,6 +448,22 @@ def get_timetable_tommorow(update: Update, context: CallbackContext) -> State:
                 )
                 for lesson in timetable.lessons
             )
+        )
+        if wanted is None
+        else get_text("wanted_tomorrow_timetable").format(
+            wanted=wanted.name if isinstance(wanted, Teacher) else wanted.subclass,
+            lessons="\n\n".join(
+                get_text("lesson_format").format(
+                    lesson_number=lesson.lesson_number,
+                    lesson_time=LESSON_TIME[lesson.lesson_number],
+                    subject=lesson.subject,
+                    cabinet=lesson.cabinet,
+                    misc_info=lesson.teacher
+                    if isinstance(user, Student)
+                    else lesson.subclass,
+                )
+                for lesson in timetable.lessons
+            ),
         ),
         reply_markup=MAIN_MENU_MARKUP,
     )
@@ -443,9 +488,11 @@ def select_day_of_week(update: Update, context: CallbackContext) -> State:
     return State.SELECT_DAY_OF_WEEK
 
 
-def get_timetable_certain_day(update: Update, context: CallbackContext) -> State:
+def get_timetable_certain_day(
+    update: Update, context: CallbackContext, wanted=None
+) -> State:
     day_of_week = update.callback_query.data.split("_")[-1]
-    user = DBTG.get_user(get_telegram_id(update))
+    user = DBTG.get_user(get_telegram_id(update)) if wanted is None else wanted
     timetable = AGENT.get_day(user, int(day_of_week))
     days = {
         "1": "понедельник",
@@ -465,23 +512,50 @@ def get_timetable_certain_day(update: Update, context: CallbackContext) -> State
 
     update_query(
         update=update,
-        text=get_text("certain_day_timetable").format(
-            day_of_week=days[day_of_week],
-            lessons="\n\n".join(
-                get_text("lesson_format").format(
-                    lesson_number=lesson.lesson_number,
-                    lesson_time=LESSON_TIME[lesson.lesson_number],
-                    subject=lesson.subject,
-                    cabinet=lesson.cabinet,
-                    misc_info=lesson.teacher
-                    if isinstance(user, Student)
-                    else lesson.subclass,
+        text=(
+            (
+                get_text("certain_day_timetable").format(
+                    day_of_week=days[day_of_week],
+                    lessons="\n\n".join(
+                        get_text("lesson_format").format(
+                            lesson_number=lesson.lesson_number,
+                            lesson_time=LESSON_TIME[lesson.lesson_number],
+                            subject=lesson.subject,
+                            cabinet=lesson.cabinet,
+                            misc_info=lesson.teacher
+                            if isinstance(user, Student)
+                            else lesson.subclass,
+                        )
+                        for lesson in timetable.lessons
+                    ),
                 )
-                for lesson in timetable.lessons
-            ),
-        )
-        if timetable.lessons
-        else "У вас нет уроков в этот день",
+                if timetable.lessons
+                else "У вас нет уроков в этот день"
+            )
+            if wanted is None
+            else (
+                get_text("wanted_certain_day_timetable").format(
+                    wanted=wanted.name
+                    if isinstance(wanted, Teacher)
+                    else wanted.subclass,
+                    day_of_week=days[day_of_week],
+                    lessons="\n\n".join(
+                        get_text("lesson_format").format(
+                            lesson_number=lesson.lesson_number,
+                            lesson_time=LESSON_TIME[lesson.lesson_number],
+                            subject=lesson.subject,
+                            cabinet=lesson.cabinet,
+                            misc_info=lesson.teacher
+                            if isinstance(user, Student)
+                            else lesson.subclass,
+                        )
+                        for lesson in timetable.lessons
+                    ),
+                )
+                if timetable.lessons
+                else "У {wanted.name if isinstance(wanted, Teacher) else wanted.subclass} нет уроков в этот день"
+            )
+        ),
         reply_markup=MAIN_MENU_MARKUP,
     )
     return State.MAIN_MENU
@@ -581,13 +655,110 @@ def misc_menu_second(update: Update, context: CallbackContext) -> State:
 
 
 def find_teacher(update: Update, context: CallbackContext) -> State:
-    #TODO
-    return State.MISC_MENU
+    ask_teacher_name(update, context)
+    return State.SEARCH_NAME_ENTERED
+
+def search_name_entered(update: Update, context: CallbackContext) -> State:
+    name = update.message.text
+    if name.count(" ") >= 2:
+        # Surname. N. N.
+        name = "{} {}{}".format(*name.split())
+    update.message.delete()
+
+    context.user_data["WANTED"] = [False, name]
+
+    context.user_data.pop("CALLBACK_MESSAGE").edit_message_text(
+        text=get_text("find_text"),
+        reply_markup=markup_from(
+            [
+                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+                [
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                ],
+                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Неделя", CallbackEnum.CHECK_WEEK)],
+            ]
+        ),
+    )
+    return State.SEARCH_SUBCLASS_MENU
 
 
 def find_subclass(update: Update, context: CallbackContext) -> State:
-    #TODO
-    return State.MISC_MENU
+    choose_parallel(update, context)
+    return State.SEARCH_PARALLLEL_ENTERED
+
+
+def choose_letter_for_search(update: Update, context: CallbackContext) -> State:
+    parallel = update.callback_query.data.split("_")[-1]
+    context.user_data["SEARCH_PARALLEL"] = parallel
+    choose_letter(update, context)
+    return State.SEARCH_LETTER_ENTERED
+
+
+def choose_group_for_search(update: Update, context: CallbackContext) -> State:
+    letter = update.callback_query.data.split("_")[-1]
+    context.user_data["SEARCH_LETTER"] = letter
+    choose_group(update, context)
+    return State.SEARCH_SUBCLASS
+
+
+def search_subclass(update: Update, context: CallbackContext) -> State:
+    subclass = (
+        context.user_data["SEARCH_PARALLEL"]
+        + context.user_data["SEARCH_LETTER"]
+        + update.callback_query.data.split("_")[-1]
+    )
+    context.user_data["WANTED"] = [True, subclass]
+
+    update_query(
+        update=update,
+        text=get_text("find_text"),
+        reply_markup=markup_from(
+            [
+                [("Следующий урок", CallbackEnum.CHECK_NEXT_LESSON)],
+                [
+                    ("Сегодня", CallbackEnum.CHECK_TODAY),
+                    ("Завтра", CallbackEnum.CHECK_TOMORROW),
+                ],
+                [(" Определенный день недели ", CallbackEnum.CHECK_CERTAIN_DAY)],
+                [("Неделя", CallbackEnum.CHECK_WEEK)],
+            ]
+        ),
+    )
+    return State.SEARCH_SUBCLASS_MENU
+
+
+def search_for_day_of_week(update: Update, context: CallbackContext) -> State:
+    is_student, wanted = context.user_data["WANTED"]
+    wanted = Student(subclass=wanted) if is_student else Teacher(name=wanted)
+    return get_timetable_certain_day(update, update, wanted=wanted)
+
+
+def search_menu_distribution(update: Update, context: CallbackContext) -> State:
+    is_student, wanted = context.user_data["WANTED"]
+    wanted = Student(subclass=wanted) if is_student else Teacher(name=wanted)
+
+    event = CallbackEnum(update.callback_query.data)
+    if event == CallbackEnum.CHECK_NEXT_LESSON:
+        return get_next_lesson(update, context, wanted=wanted)
+    elif event == CallbackEnum.CHECK_TODAY:
+        return get_timetable_today(update, context, wanted=wanted)
+    elif event == CallbackEnum.CHECK_TOMORROW:
+        return get_timetable_tommorow(update, context, wanted=wanted)
+    elif event == CallbackEnum.CHECK_CERTAIN_DAY:
+        select_day_of_week(update, context)
+        return State.SEARCH_FOR_DAY_OF_WEEK
+    elif event == CallbackEnum.CHECK_WEEK:
+        return get_timetable_week(update, context)
+    else:
+        telegram_id = get_telegram_id(update)
+        user = DBTG.get_user(telegram_id)
+        info = user.subclass if isinstance(user, Student) else user.name
+        logger.error(
+            f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] got unknown event: {event}"
+        )
+        return State.SEARCH_SUBCLASS_MENU
 
 
 def announcements_handler(update: Update, context: CallbackContext) -> State:
