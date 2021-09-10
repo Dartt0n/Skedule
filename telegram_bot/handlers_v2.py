@@ -56,7 +56,7 @@ def get_text(text):
     return texts[text]
 
 
-def announce_bot_restart(updater: Updater):
+def announce_bot_update(updater: Updater):
     with open(
         path.abspath(path.join(path.dirname(__file__), "..", "resources", "update_message.md")), "r"
     ) as f:
@@ -65,7 +65,7 @@ def announce_bot_restart(updater: Updater):
         logger.info(f"Send announcement to {telegram_id}")
         updater.bot.send_message(
             chat_id=telegram_id,
-            text=text,
+            text=text+get_text("restart_message"),
             parse_mode="markdown",
         )
         sleep(0.5)

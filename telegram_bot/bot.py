@@ -40,7 +40,7 @@ def run() -> None:
     logger.info(f"Loading token: {TOKEN_INFO[profile]}")
     updater = Updater(properties[TOKEN_INFO[profile]].data)
 
-    handlers.announce_bot_restart(updater)
+    handlers.announce_bot_update(updater)
 
     updater.dispatcher.add_handler(
         ConversationHandler(
