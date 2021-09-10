@@ -56,19 +56,17 @@ class CallbackEnum(AutoName):
     DONATE = auto()
     EXAMPLES = auto()
     FAQ = auto()
-    CARTEEN = auto()
+    CANTEEN = auto()
     RINGS = auto()
-    # 
+    #
     MISC_MENU_FIRST = auto()
     MISC_MENU_SECOND = auto()
-
 
 
 class State(AutoName):
     MAIN_MENU = auto()
     LOGIN = auto()
     MISC_MENU = auto()
-    HELP_MENU = auto()
     PARALLEL_ENTERED = auto()
     LETTER_ENTERED = auto()
     GROUP_ENTERED = auto()
@@ -76,3 +74,4 @@ class State(AutoName):
     NAME_ENTERED = auto()
     CONFIRM_NAME = auto()
     SELECT_DAY_OF_WEEK = auto()
+    MISC_MENU_SECOND = auto()

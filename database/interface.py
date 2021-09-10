@@ -9,6 +9,7 @@ from typing import List
 from jproperties import Properties
 from os import path
 
+
 class Agent:
     def __init__(self) -> None:
         """
@@ -32,7 +33,7 @@ class Agent:
 
         self.__engine = create_engine(
             f"mariadb+mariadbconnector://{DB_USER_NAME}:{DB_USER_PASSWORD}@{DB_DATABASE_HOST}:3306/{DB_DATABASE_NAME}",
-            isolation_level="READ UNCOMMITTED"
+            isolation_level="READ UNCOMMITTED",
         )
         # create database and configure it with engine
         self.__base = declarative_base()
@@ -40,7 +41,6 @@ class Agent:
         # create session. `sessionmaker` return class, so we need use `()` to create an object
         self.__session: Session = sessionmaker(bind=self.__engine)()
         self.__session.execute("SET SESSION query_cache_type = OFF")
-
 
     def __get_table(self, user: User) -> Table:
         """Returns table, which can be received from metadata of database.

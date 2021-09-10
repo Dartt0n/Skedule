@@ -58,14 +58,17 @@ def get_text(text):
 
 def announce_bot_update(updater: Updater):
     with open(
-        path.abspath(path.join(path.dirname(__file__), "..", "resources", "update_message.md")), "r"
+        path.abspath(
+            path.join(path.dirname(__file__), "..", "resources", "update_message.md")
+        ),
+        "r",
     ) as f:
         text = f.read()
     for telegram_id in DBTG.get_chats():
         logger.info(f"Send announcement to {telegram_id}")
         updater.bot.send_message(
             chat_id=telegram_id,
-            text=text+get_text("restart_message"),
+            text=text + get_text("restart_message"),
             parse_mode="markdown",
         )
         sleep(0.5)
@@ -271,9 +274,7 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
     else:  # afer lessons
         # timetable = AGENT.get_day(user, day_of_week + 1)  # next day
         days = AGENT.get_week(user)[day_of_week:]
-        days.extend(
-            AGENT.get_week(user)[: day_of_week - 1]
-        )  # next days
+        days.extend(AGENT.get_week(user)[: day_of_week - 1])  # next days
         for d_timetable in days:
             if d_timetable.lessons:
                 day_of_week = d_timetable.day_of_week
@@ -546,13 +547,11 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
         text=get_text("misc_menu"),
         reply_markup=markup_from(
             [
-                # [
-                #    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
-                #    ("Найти учителя", CallbackEnum.FIND_TEACHER),
-                # ],
-                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
-                [("Расписание звонков/столовой", CallbackEnum.HELPFUL_MATERIALS)],
-                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+                [
+                    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
+                    ("Найти учителя", CallbackEnum.FIND_TEACHER),
+                ],
+                [("Расписание звонков", CallbackEnum.RINGS)],
                 [("Написать разработчикам", CallbackEnum.HELP)],
                 [("Поддержать разработчиков", CallbackEnum.DONATE)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
@@ -567,9 +566,18 @@ def misc_menu_second(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
         text=get_text("misc_menu"),
-        reply_markup=markup_from([[(" <---- ", CallbackEnum.MISC_MENU_FIRST)]]),
+        reply_markup=markup_from(
+            [
+                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
+                [("Расписание столовой", CallbackEnum.CANTEEN)],
+                # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
+                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+                [(" <---- ", CallbackEnum.MISC_MENU_FIRST)],
+            ]
+        ),
     )
-    return State.MISC_MENU
+    return State.MISC_MENU_SECOND
 
 
 def find_teacher(update: Update, context: CallbackContext) -> State:
@@ -592,21 +600,7 @@ def announcements_handler(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update, text="\n\n".join(announcements), reply_markup=MAIN_MENU_MARKUP
     )
-    return State.MAIN_MENU
-
-
-def helpful_materials(update: Update, context: CallbackContext) -> State:
-    update_query(
-        update=update,
-        text=get_text("helpful_materials"),
-        reply_markup=markup_from(
-            [
-                [("Расписание звонков", CallbackEnum.RINGS)],
-                [("Расписание столовой", CallbackEnum.CARTEEN)],
-            ]
-        ),
-    )
-    return State.HELP_MENU
+    return State.MAIN_MENU_SECOND
 
 
 def donate_message(update: Update, context: CallbackContext) -> State:
@@ -648,7 +642,7 @@ def canteen(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update, text=get_text("canteen_timetable"), reply_markup=MAIN_MENU_MARKUP
     )
-    return State.MAIN_MENU
+    return State.MAIN_MENU_SECOND
 
 
 def connect_to_devs(update: Update, context: CallbackContext) -> State:
@@ -716,22 +710,16 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
         return find_subclass(update, context)
     elif event == CallbackEnum.FIND_TEACHER:
         return find_teacher(update, context)
-    elif event == CallbackEnum.ANNOUNCEMENTS:
-        return announcements_handler(update, context)
-    elif event == CallbackEnum.HELPFUL_MATERIALS:
-        return helpful_materials(update, context)
+    elif event == CallbackEnum.RINGS:
+        return rings(update, context)
     elif event == CallbackEnum.HELP:
         return connect_to_devs(update, context)
     elif event == CallbackEnum.DONATE:
         return donate_message(update, context)
-    elif event == CallbackEnum.CHANGE_INFORMATION:
-        return change_info(update, context)
     elif event == CallbackEnum.MAIN_MENU:
         return main_menu(update, context)
     elif event == CallbackEnum.MISC_MENU_SECOND:
         return misc_menu_second(update, context)
-    elif event == CallbackEnum.MISC_MENU_FIRST:
-        return misc_menu(update, context)
     else:
         telegram_id = get_telegram_id(update)
         user = DBTG.get_user(telegram_id)
@@ -742,12 +730,18 @@ def misc_menu_distributor(update: Update, context: CallbackContext):
         return State.MISC_MENU
 
 
-def help_menu_distributor(update: Update, context: CallbackContext):
+def misc_menu_second_distributor(update: Update, context: CallbackContext):
     event = CallbackEnum(update.callback_query.data)
-    if event == CallbackEnum.CARTEEN:
+    if event == CallbackEnum.ANNOUNCEMENTS:
+        return announcements_handler(update, context)
+    elif event == CallbackEnum.CANTEEN:
         return canteen(update, context)
-    elif event == CallbackEnum.RINGS:
-        return rings(update, context)
+    elif event == CallbackEnum.CHANGE_INFORMATION:
+        return change_info(update, context)
+    elif event == CallbackEnum.MISC_MENU_FIRST:
+        return misc_menu(update, context)
+    elif event == CallbackEnum.MAIN_MENU:
+        return main_menu(update, context)
     else:
         telegram_id = get_telegram_id(update)
         user = DBTG.get_user(telegram_id)
@@ -755,4 +749,4 @@ def help_menu_distributor(update: Update, context: CallbackContext):
         logger.error(
             f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] got unknown event: {event}"
         )
-        return State.HELP_MENU
+        return State.MISC_MENU_SECOND
