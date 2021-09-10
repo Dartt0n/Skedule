@@ -555,7 +555,7 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
                 [("Написать разработчикам", CallbackEnum.HELP)],
                 [("Поддержать разработчиков", CallbackEnum.DONATE)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
-                [(" ----> ", CallbackEnum.MISC_MENU_SECOND)],
+                [(" \u27A1 ", CallbackEnum.MISC_MENU_SECOND)],
             ]
         ),
     )
@@ -573,7 +573,7 @@ def misc_menu_second(update: Update, context: CallbackContext) -> State:
                 # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
                 [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
                 [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
-                [(" <---- ", CallbackEnum.MISC_MENU_FIRST)],
+                [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
             ]
         ),
     )
@@ -581,10 +581,12 @@ def misc_menu_second(update: Update, context: CallbackContext) -> State:
 
 
 def find_teacher(update: Update, context: CallbackContext) -> State:
+    #TODO
     return State.MISC_MENU
 
 
 def find_subclass(update: Update, context: CallbackContext) -> State:
+    #TODO
     return State.MISC_MENU
 
 
