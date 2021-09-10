@@ -267,7 +267,8 @@ def get_next_lesson(update: Update, context: CallbackContext) -> State:
         timetable = AGENT.get_day(user, day_of_week)  # today
     else:  # afer lessons
         # timetable = AGENT.get_day(user, day_of_week + 1)  # next day
-        days = AGENT.get_week(user)[day_of_week:].extend(
+        days = AGENT.get_week(user)[day_of_week:]
+        days.extend(
             AGENT.get_week(user)[: day_of_week - 1]
         )  # next days
         for d_timetable in days:
