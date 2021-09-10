@@ -59,14 +59,14 @@ MISC_MENU_MARKUP = markup_from(
 )
 
 MISC_MENU_SECOND_MARKUP = markup_from(
-            [
-                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
-                [("Расписание столовой", CallbackEnum.CANTEEN)],
-                # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
-                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
-                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
-                [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
-            ]
+    [
+        [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
+        [("Расписание столовой", CallbackEnum.CANTEEN)],
+        # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
+        [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+        [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+        [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
+    ]
 )
 
 texts = get_json("texts.json")
@@ -89,9 +89,16 @@ def announce_bot_update(updater: Updater):
         text = f.read()
     for telegram_id in DBTG.get_chats():
         logger.info(f"Send announcement to {telegram_id}")
+        #
         updater.bot.send_message(
             chat_id=telegram_id,
             text=text + get_text("restart_message"),
+            parse_mode="markdown",
+        )
+        sleep(0.5)
+        updater.bot.send_message(
+            chat_id=telegram_id,
+            text=get_json("announcements.json")["data"][0],
             parse_mode="markdown",
         )
         sleep(0.5)
@@ -840,7 +847,7 @@ def rings(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update, text=get_text("rings_timetable"), reply_markup=MISC_MENU_MARKUP
     )
-    return State.MAIN_MENU
+    return State.MISC_MENU
 
 
 def canteen(update: Update, context: CallbackContext) -> State:

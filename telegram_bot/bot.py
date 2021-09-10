@@ -116,7 +116,6 @@ def run() -> None:
                 State.MISC_MENU: [CallbackQueryHandler(handlers.misc_menu_distributor)],
                 State.SELECT_DAY_OF_WEEK: [
                     CallbackQueryHandler(
-                        pattern=f"^{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]$",
                         callback=handlers.get_timetable_certain_day,
                     )
                 ],
@@ -146,7 +145,6 @@ def run() -> None:
                 ],
                 State.SEARCH_FOR_DAY_OF_WEEK: [
                     CallbackQueryHandler(
-                        pattern=f"^{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]$",
                         callback=handlers.search_for_day_of_week,
                     )
                 ],
