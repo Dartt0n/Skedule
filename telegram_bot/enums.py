@@ -53,18 +53,20 @@ class CallbackEnum(AutoName):
     FIND_TEACHER_CERTAIN_DAY = auto()
     # help menu
     TECHNICAL_SUPPORT = auto()
-    TUTORIALS = auto()
+    DONATE = auto()
     EXAMPLES = auto()
     FAQ = auto()
-    CARTEEN = auto()
+    CANTEEN = auto()
     RINGS = auto()
+    #
+    MISC_MENU_FIRST = auto()
+    MISC_MENU_SECOND = auto()
 
 
 class State(AutoName):
     MAIN_MENU = auto()
     LOGIN = auto()
     MISC_MENU = auto()
-    HELP_MENU = auto()
     PARALLEL_ENTERED = auto()
     LETTER_ENTERED = auto()
     GROUP_ENTERED = auto()
@@ -72,3 +74,10 @@ class State(AutoName):
     NAME_ENTERED = auto()
     CONFIRM_NAME = auto()
     SELECT_DAY_OF_WEEK = auto()
+    MISC_MENU_SECOND = auto()
+    SEARCH_PARALLLEL_ENTERED = auto()
+    SEARCH_LETTER_ENTERED = auto()
+    SEARCH_SUBCLASS = auto()
+    SEARCH_SUBCLASS_MENU = auto()
+    SEARCH_FOR_DAY_OF_WEEK = auto()
+    SEARCH_NAME_ENTERED = auto()

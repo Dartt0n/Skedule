@@ -1,11 +1,12 @@
-import logging
+from loguru import logger as l
 
-logging.basicConfig(
-    format="%(asctime)23s | %(levelname)-8s| %(name)-30s| %(message)s",
-    level=logging.INFO,
-    filename="general.log",
-    filemode="w",
+l.add(
+    "general.log",
+    mode="w",
+    rotation="10MB",
+    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
 )
-logger = logging.getLogger(__name__)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-logger.setLevel(logging.INFO)
+for _ in range(5):
+    l.info("#" * 50)
+
+logger = l

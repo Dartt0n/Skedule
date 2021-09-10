@@ -18,15 +18,16 @@ from logger_config import logger
 
 Base = declarative_base()
 
+
 def load_profile():
     path_to_file = path.abspath(
         path.join(path.dirname(__file__), "..", "switch_profile")
     )
-    logger.info("Loading profile from switch profile file")
     with open(path_to_file, "r") as f:
         profile = f.read().strip()
         logger.info(f"Loaded profile: {profile}")
         return profile
+
 
 class TelegramUser(Base):
     __tablename__ = load_profile()
@@ -100,4 +101,6 @@ class TelegramAgent:
         )
 
     def get_chats(self) -> List[int]:
-        return list(map(lambda x: x.telegram_id, self.session.query(TelegramUser).all()))
+        return list(
+            map(lambda x: x.telegram_id, self.session.query(TelegramUser).all())
+        )

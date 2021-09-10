@@ -1,3 +1,4 @@
+from telegram.ext.callbackcontext import CallbackContext
 from database.telegram import load_profile
 from logger_config import logger
 
@@ -23,8 +24,8 @@ def pattern(event: CallbackEnum):
     return "^" + event.value + "$"
 
 
-def error_handler(update, error):
-    logger.info("ERROR: {error}")
+def error_handler(update, error: CallbackContext):
+    logger.error(f"{error.error}")
 
 
 def run() -> None:
@@ -36,16 +37,12 @@ def run() -> None:
     ) as config:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
-    logger.info(f"Loading token: {TOKEN_INFO[load_profile()]}")
-    updater = Updater(properties[TOKEN_INFO[load_profile()]].data)
-    logger.info(f"Loaded: {properties[TOKEN_INFO[load_profile()]].data}")
+    profile = load_profile()
+    logger.info(f"Loading token: {TOKEN_INFO[profile]}")
+    updater = Updater(properties[TOKEN_INFO[profile]].data)
 
+    handlers.announce_bot_update(updater)
 
-    for _ in range(100):
-        handlers.announce_bot_restart(updater)
-    
-
-    logger.info(f"Send announce message")
     updater.dispatcher.add_handler(
         ConversationHandler(
             entry_points=[
@@ -79,7 +76,9 @@ def run() -> None:
                 State.GROUP_ENTERED: [
                     CallbackQueryHandler(
                         pattern=f"^{CallbackEnum.GROUP.value}",
-                        callback=handlers.confirm_subclass)],
+                        callback=handlers.confirm_subclass,
+                    )
+                ],
                 State.CONFIRM_SUBCLASS: [
                     CallbackQueryHandler(
                         pattern=pattern(CallbackEnum.CONFIRM_SUBCLASS),
@@ -116,15 +115,53 @@ def run() -> None:
                 State.MAIN_MENU: [CallbackQueryHandler(handlers.main_menu_distributor)],
                 State.MISC_MENU: [CallbackQueryHandler(handlers.misc_menu_distributor)],
                 State.SELECT_DAY_OF_WEEK: [
-                    CallbackQueryHandler(handlers.get_timetable_certain_day)
+                    CallbackQueryHandler(
+                        callback=handlers.get_timetable_certain_day,
+                    )
                 ],
-                State.HELP_MENU: [CallbackQueryHandler(handlers.help_menu_distributor)],
+                State.MISC_MENU_SECOND: [
+                    CallbackQueryHandler(handlers.misc_menu_second_distributor)
+                ],
+                State.SEARCH_PARALLLEL_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.PARALLEL.value}_([0-9]|10|11)$",
+                        callback=handlers.choose_letter_for_search,
+                    )
+                ],
+                State.SEARCH_LETTER_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.LETTER.value}",
+                        callback=handlers.choose_group_for_search,
+                    )
+                ],
+                State.SEARCH_SUBCLASS: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.GROUP.value}",
+                        callback=handlers.search_subclass,
+                    )
+                ],
+                State.SEARCH_SUBCLASS_MENU: [
+                    CallbackQueryHandler(handlers.search_menu_distribution)
+                ],
+                State.SEARCH_FOR_DAY_OF_WEEK: [
+                    CallbackQueryHandler(
+                        callback=handlers.search_for_day_of_week,
+                    )
+                ],
+                State.SEARCH_NAME_ENTERED: [
+                    MessageHandler(
+                        filters=Filters.regex(
+                            f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s*[А-ЯЁ]\.\s*[А-ЯЁ]\.\s*$"
+                        ),
+                        callback=handlers.search_name_entered,
+                    )
+                ],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )
     )
-    updater.dispatcher.add_error_handler(lambda *args: None)
 
+    updater.dispatcher.add_error_handler(error_handler)
     # Start the Bot
     updater.start_polling()
     updater.idle()
