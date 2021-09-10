@@ -115,23 +115,49 @@ def run() -> None:
                 State.MAIN_MENU: [CallbackQueryHandler(handlers.main_menu_distributor)],
                 State.MISC_MENU: [CallbackQueryHandler(handlers.misc_menu_distributor)],
                 State.SELECT_DAY_OF_WEEK: [
-                    CallbackQueryHandler(handlers.get_timetable_certain_day)
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]$",
+                        callback=handlers.get_timetable_certain_day,
+                    )
                 ],
                 State.MISC_MENU_SECOND: [
                     CallbackQueryHandler(handlers.misc_menu_second_distributor)
                 ],
-                State.SEARCH_PARALLLEL_ENTERED: [CallbackQueryHandler(handlers.choose_letter_for_search)],
-                State.SEARCH_LETTER_ENTERED: [CallbackQueryHandler(handlers.choose_group_for_search)],
-                State.SEARCH_SUBCLASS: [CallbackQueryHandler(handlers.search_subclass)],
-                State.SEARCH_SUBCLASS_MENU: [CallbackQueryHandler(handlers.search_menu_distribution)],
-                State.SEARCH_FOR_DAY_OF_WEEK: [CallbackQueryHandler(handlers.search_for_day_of_week)],
+                State.SEARCH_PARALLLEL_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.PARALLEL.value}_([0-9]|10|11)$",
+                        callback=handlers.choose_letter_for_search,
+                    )
+                ],
+                State.SEARCH_LETTER_ENTERED: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.LETTER.value}",
+                        callback=handlers.choose_group_for_search,
+                    )
+                ],
+                State.SEARCH_SUBCLASS: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.GROUP.value}",
+                        callback=handlers.search_subclass,
+                    )
+                ],
+                State.SEARCH_SUBCLASS_MENU: [
+                    CallbackQueryHandler(handlers.search_menu_distribution)
+                ],
+                State.SEARCH_FOR_DAY_OF_WEEK: [
+                    CallbackQueryHandler(
+                        pattern=f"^{CallbackEnum.SELECT_DAY_OF_WEEK.value}_[1-7]$",
+                        callback=handlers.search_for_day_of_week,
+                    )
+                ],
                 State.SEARCH_NAME_ENTERED: [
                     MessageHandler(
                         filters=Filters.regex(
                             f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s*[А-ЯЁ]\.\s*[А-ЯЁ]\.\s*$"
                         ),
-                        callback=handlers.search_name_entered)
-                    ],
+                        callback=handlers.search_name_entered,
+                    )
+                ],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
         )

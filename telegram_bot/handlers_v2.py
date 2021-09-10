@@ -44,7 +44,30 @@ MAIN_MENU_MARKUP = markup_from(
         [("Другое", CallbackEnum.MISC_MENU)],
     ]
 )
+MISC_MENU_MARKUP = markup_from(
+    [
+        [
+            ("Найти класс", CallbackEnum.FIND_SUBCLASS),
+            ("Найти учителя", CallbackEnum.FIND_TEACHER),
+        ],
+        [("Расписание звонков", CallbackEnum.RINGS)],
+        [("Написать разработчикам", CallbackEnum.HELP)],
+        [("Поддержать разработчиков", CallbackEnum.DONATE)],
+        [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+        [(" \u27A1 ", CallbackEnum.MISC_MENU_SECOND)],
+    ]
+)
 
+MISC_MENU_SECOND_MARKUP = markup_from(
+            [
+                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
+                [("Расписание столовой", CallbackEnum.CANTEEN)],
+                # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
+                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
+                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
+                [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
+            ]
+)
 
 texts = get_json("texts.json")
 announcements = list(
@@ -235,6 +258,7 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
                 [("Нет, я хочу изменить", CallbackEnum.CHANGE_NAME.value)],
             ]
         ),
+        parse_mode="markdown",
     )
     return State.CONFIRM_NAME
 
@@ -643,19 +667,7 @@ def misc_menu(update: Update, context: CallbackContext) -> State:
     update_query(
         update,
         text=get_text("misc_menu"),
-        reply_markup=markup_from(
-            [
-                [
-                    ("Найти класс", CallbackEnum.FIND_SUBCLASS),
-                    ("Найти учителя", CallbackEnum.FIND_TEACHER),
-                ],
-                [("Расписание звонков", CallbackEnum.RINGS)],
-                [("Написать разработчикам", CallbackEnum.HELP)],
-                [("Поддержать разработчиков", CallbackEnum.DONATE)],
-                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
-                [(" \u27A1 ", CallbackEnum.MISC_MENU_SECOND)],
-            ]
-        ),
+        reply_markup=MISC_MENU_MARKUP,
     )
     return State.MISC_MENU
 
@@ -798,18 +810,9 @@ def announcements_handler(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
         text="\n\n".join(announcements),
-        reply_markup=markup_from(
-            [
-                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
-                [("Расписание столовой", CallbackEnum.CANTEEN)],
-                # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
-                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
-                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
-                [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
-            ]
-        ),
+        reply_markup=MISC_MENU_SECOND_MARKUP,
     )
-    return State.MAIN_MENU_SECOND
+    return State.MISC_MENU_SECOND
 
 
 def donate_message(update: Update, context: CallbackContext) -> State:
@@ -821,9 +824,9 @@ def donate_message(update: Update, context: CallbackContext) -> State:
     )
 
     update_query(
-        update=update, text=get_text("donate_message"), reply_markup=MAIN_MENU_MARKUP
+        update=update, text=get_text("donate_message"), reply_markup=MISC_MENU_MARKUP
     )
-    return State.MAIN_MENU
+    return State.MISC_MENU
 
 
 def rings(update: Update, context: CallbackContext) -> State:
@@ -835,7 +838,7 @@ def rings(update: Update, context: CallbackContext) -> State:
     )
 
     update_query(
-        update=update, text=get_text("rings_timetable"), reply_markup=MAIN_MENU_MARKUP
+        update=update, text=get_text("rings_timetable"), reply_markup=MISC_MENU_MARKUP
     )
     return State.MAIN_MENU
 
@@ -851,18 +854,9 @@ def canteen(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
         text=get_text("canteen_timetable"),
-        reply_markup=markup_from(
-            [
-                [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
-                [("Расписание столовой", CallbackEnum.CANTEEN)],
-                # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
-                [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
-                [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
-                [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
-            ]
-        ),
+        reply_markup=MISC_MENU_SECOND_MARKUP,
     )
-    return State.MAIN_MENU_SECOND
+    return State.MISC_MENU_SECOND
 
 
 def connect_to_devs(update: Update, context: CallbackContext) -> State:
@@ -876,9 +870,9 @@ def connect_to_devs(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update,
         text=get_text("help_message").format(telegram_id=get_telegram_id(update)),
-        reply_markup=MAIN_MENU_MARKUP,
+        reply_markup=MISC_MENU_MARKUP,
     )
-    return State.MAIN_MENU
+    return State.MISC_MENU
 
 
 def change_info(update: Update, context: CallbackContext) -> State:
