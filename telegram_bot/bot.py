@@ -36,9 +36,9 @@ def run() -> None:
     ) as config:
         properties.load(config)
     # Create the Updater and pass it your bot's token.
-    logger.info(f"Loading token: {TOKEN_INFO[load_profile()]}")
-    updater = Updater(properties[TOKEN_INFO[load_profile()]].data)
-    logger.info(f"Loaded: {properties[TOKEN_INFO[load_profile()]].data}")
+    profile = load_profile()
+    logger.info(f"Loading token: {TOKEN_INFO[profile]}")
+    updater = Updater(properties[TOKEN_INFO[profile]].data)
 
     handlers.announce_bot_restart(updater)
 
