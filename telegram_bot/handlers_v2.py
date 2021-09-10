@@ -840,7 +840,7 @@ def rings(update: Update, context: CallbackContext) -> State:
     update_query(
         update=update, text=get_text("rings_timetable"), reply_markup=MISC_MENU_MARKUP
     )
-    return State.MAIN_MENU
+    return State.MISC_MENU
 
 
 def canteen(update: Update, context: CallbackContext) -> State:
