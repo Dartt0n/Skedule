@@ -96,13 +96,13 @@ def announce_bot_update(updater: Updater):
                 text=text + get_text("restart_message"),
                 parse_mode="markdown",
             )
-            sleep(0.5)
+            sleep(0.25)
             updater.bot.send_message(
                 chat_id=telegram_id,
                 text=get_json("announcements.json")["data"][0],
                 parse_mode="markdown",
             )
-            sleep(0.5)
+            sleep(0.25)
         except:
             logger.critical(f"Даун детектет: {telegram_id}")
 
