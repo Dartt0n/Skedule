@@ -176,7 +176,7 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
                     )
                     for letter in letter_list
                 ]
-                for letter_list in ["АБВГДЕ", "ЖЗИЙКЛ", "МНОПРС", "ТУФХЦ", "ЧШЭЮЯ"]
+                for letter_list in ["ВГДЕ", "ЖЗИК", "ЛМНО", "ПРСТ"]
             ]
         ),
     )
@@ -227,13 +227,15 @@ def save_subclass_to_database(update: Update, context: CallbackContext) -> State
     subclass = context.user_data["SUBCLASS"]
     telegram_id = get_telegram_id(update)
     if not DBTG.check_if_user_exists(telegram_id):
-        logger.info(f"User {telegram_id} registered with subclass {subclass}")
+        logger.info(f"User {telegram_id} [{update.callback_query.message.chat.username}] registered with subclass {subclass}")
         # this is new user, so we create new row in database
         DBTG.create_new_user(
             telegram_id=telegram_id, is_student=True, subclass=subclass
         )
     else:
-        logger.info(f"User {telegram_id} changed his subclass to {subclass}")
+        user = DBTG.get_user(get_telegram_id(update))
+        info = user.subclass if isinstance(user, Student) else user.name
+        logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] changed his subclass to {subclass}")
         # this is old user, update row
         DBTG.change_subclass(telegram_id=telegram_id, subclass=subclass)
     # return main menu
@@ -248,6 +250,13 @@ def ask_teacher_name(update: Update, context: CallbackContext) -> State:
     context.user_data["CALLBACK_MESSAGE"] = update.callback_query
     return State.NAME_ENTERED
 
+def wrong_format_name(update: Update, context: CallbackContext) -> State:
+    update.message.delete()
+    context.user_data["CALLBACK_MESSAGE"].edit_message_text(
+        text=get_text("wrong_format_name"),
+        parse_mode="markdown",
+    )
+    return State.NAME_ENTERED
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
@@ -255,8 +264,8 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
         # Surname. N. N.
         name = "{} {}{}".format(*name.split())
     context.user_data["USER_NAME"] = name
-
     update.message.delete()
+    
     context.user_data.pop("CALLBACK_MESSAGE").edit_message_text(
         text=get_text("confirm_name").format(teacher_name=name),
         reply_markup=markup_from(
@@ -275,12 +284,14 @@ def save_teacher_name_to_database(update: Update, context: CallbackContext) -> S
     telegram_id = get_telegram_id(update)
     if not DBTG.check_if_user_exists(telegram_id):
         # new teacher
-        logger.info(f"User {telegram_id} registered with name {name}")
+        logger.info(f"User {telegram_id} [{update.callback_query.message.chat.username}] registered with name {name}")
         DBTG.create_new_user(
             telegram_id=telegram_id, is_student=False, teacher_name=name
         )
     else:
-        logger.info(f"User {telegram_id} changed his name to {name}")
+        user = DBTG.get_user(get_telegram_id(update))
+        info = user.subclass if isinstance(user, Student) else user.name
+        logger.info(f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] changed his name to {name}")
         # old user
         DBTG.change_teacher_name(telegram_id=telegram_id, teacher_name=name)
     return main_menu(update, context, True)
@@ -360,8 +371,17 @@ def send_lesson(update, user, lesson, day_of_week, wanted):
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
+
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = f"for \"{wanted.name}\""
+        else:
+            additional_info = f"for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f'User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons "{days[day_of_week]}"'
+        f'User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons {additional_info} "{days[day_of_week]}"'
     )
 
     text = (
@@ -404,9 +424,18 @@ def get_timetable_today(update: Update, context: CallbackContext, wanted=None) -
     timetable = AGENT.get_day(user, get_current_day_of_week())
 
     telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = f"for \"{wanted.name}\""
+        else:
+            additional_info = f"for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons today (DOW: {get_current_day_of_week()})"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons today {additional_info} (DOW: {get_current_day_of_week()})"
     )
 
     if not timetable.lessons:
@@ -464,8 +493,17 @@ def get_timetable_tommorow(
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
+    user = DBTG.get_user(telegram_id)
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = f"for \"{wanted.name}\""
+        else:
+            additional_info = f"for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons tommorow (DOW: {get_current_day_of_week() % 7 + 1})"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons tommorow {additional_info} (DOW: {get_current_day_of_week() % 7 + 1})"
     )
 
     if not timetable.lessons:
@@ -550,9 +588,18 @@ def get_timetable_certain_day(
     }
 
     telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = f"for \"{wanted.name}\""
+        else:
+            additional_info = f"for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons in certain day (DOW: {day_of_week})"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons in certain day {additional_info} (DOW: {day_of_week})"
     )
 
     update_query(
@@ -622,9 +669,18 @@ def get_timetable_week(update: Update, context: CallbackContext, wanted=None) ->
     timetable = AGENT.get_week(user)
 
     telegram_id = get_telegram_id(update)
+    user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = f"for \"{wanted.name}\""
+        else:
+            additional_info = f"for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons for week"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons for week {additional_info}"
     )
 
     if all(map(lambda x: x.lessons != [], timetable)):
