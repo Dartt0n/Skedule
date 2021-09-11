@@ -252,12 +252,12 @@ def ask_teacher_name(update: Update, context: CallbackContext) -> State:
     return State.NAME_ENTERED
 
 def wrong_format_name(update: Update, context: CallbackContext) -> State:
+    update.message.delete()
     update_query(
         update=update,
-        text=get_text("enter_name"), # TODO wrong format text
+        text=get_text("wrong_format_name"),
         parse_mode="markdown"
     )
-    update.message.delete()
     return State.NAME_ENTERED
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
@@ -269,7 +269,7 @@ def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     update.message.delete()
     
     context.user_data.pop("CALLBACK_MESSAGE").edit_message_text(
-        text=get_text("confirm_name").format(teacher_name=name), # TODO smiles for right and bad format
+        text=get_text("confirm_name").format(teacher_name=name),
         reply_markup=markup_from(
             [
                 [("Да, все верно", CallbackEnum.CONFIRM_NAME.value)],
