@@ -95,13 +95,11 @@ def announce_bot_update(updater: Updater):
             text=text + get_text("restart_message"),
             parse_mode="markdown",
         )
-        sleep(0.5)
         updater.bot.send_message(
             chat_id=telegram_id,
             text=get_json("announcements.json")["data"][0],
             parse_mode="markdown",
         )
-        sleep(0.5)
 
 
 def main_menu(update: Update, context, first_time=False) -> State:
