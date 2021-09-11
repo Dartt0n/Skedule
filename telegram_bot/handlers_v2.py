@@ -176,7 +176,7 @@ def choose_letter(update: Update, context: CallbackContext) -> State:
                     )
                     for letter in letter_list
                 ]
-                for letter_list in ["АБВГДЕ", "ЖЗИЙКЛ", "МНОПРС", "ТУФХЦ", "ЧШЭЮЯ"]
+                for letter_list in ["ВГДЕ", "ЖЗИК", "ЛМНО", "ПРСТ"]
             ]
         ),
     )
