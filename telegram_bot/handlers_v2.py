@@ -248,15 +248,13 @@ def ask_teacher_name(update: Update, context: CallbackContext) -> State:
         text=get_text("enter_name"),
     )
     context.user_data["CALLBACK_MESSAGE"] = update.callback_query
-    context.user_data["MESSAGES_TO_DELETE"] = []
     return State.NAME_ENTERED
 
 def wrong_format_name(update: Update, context: CallbackContext) -> State:
     update.message.delete()
-    update_query(
-        update=update,
+    context.user_data["CALLBACK_MESSAGE"].edit_message_text(
         text=get_text("wrong_format_name"),
-        parse_mode="markdown"
+        parse_mode="markdown",
     )
     return State.NAME_ENTERED
 

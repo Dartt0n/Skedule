@@ -158,6 +158,10 @@ def run() -> None:
                             f"^[А-ЯЁ][а-яё]*([-][А-ЯЁ][а-яё]*)?\s*[А-ЯЁ]\.\s*[А-ЯЁ]\.\s*$"
                         ),
                         callback=handlers.search_name_entered,
+                    ),
+                    MessageHandler(
+                        Filters.text,
+                        handlers.wrong_format_name
                     )
                 ],
             },
