@@ -369,8 +369,17 @@ def send_lesson(update, user, lesson, day_of_week, wanted):
     telegram_id = get_telegram_id(update)
     user = DBTG.get_user(telegram_id)
     info = user.subclass if isinstance(user, Student) else user.name
+
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = " for \"{wanted.name}\""
+        else:
+            additional_info = " for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f'User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons "{days[day_of_week]}"'
+        f'User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons "{days[day_of_week]}"{additional_info}'
     )
 
     text = (
@@ -414,8 +423,16 @@ def get_timetable_today(update: Update, context: CallbackContext, wanted=None) -
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = " for \"{wanted.name}\""
+        else:
+            additional_info = " for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons today (DOW: {get_current_day_of_week()})"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons today {additional_info} (DOW: {get_current_day_of_week()})"
     )
 
     if not timetable.lessons:
@@ -473,8 +490,16 @@ def get_timetable_tommorow(
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = " for \"{wanted.name}\""
+        else:
+            additional_info = " for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons tommorow (DOW: {get_current_day_of_week() % 7 + 1})"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons tommorow {additional_info} (DOW: {get_current_day_of_week() % 7 + 1})"
     )
 
     if not timetable.lessons:
@@ -560,8 +585,16 @@ def get_timetable_certain_day(
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = " for \"{wanted.name}\""
+        else:
+            additional_info = " for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons in certain day (DOW: {day_of_week})"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons in certain day {additional_info} (DOW: {day_of_week})"
     )
 
     update_query(
@@ -632,8 +665,16 @@ def get_timetable_week(update: Update, context: CallbackContext, wanted=None) ->
 
     telegram_id = get_telegram_id(update)
     info = user.subclass if isinstance(user, Student) else user.name
+    if wanted:
+        if isinstance(wanted, Teacher):
+            additional_info = " for \"{wanted.name}\""
+        else:
+            additional_info = " for \"{wanted.subclass}\""
+    else:
+        additional_info = ""
+    
     logger.info(
-        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons for week"
+        f"User {telegram_id} ({info}) [{update.callback_query.message.chat.username}] asked for lessons for week {additional_info}"
     )
 
     if all(map(lambda x: x.lessons != [], timetable)):
