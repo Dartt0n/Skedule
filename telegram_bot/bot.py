@@ -161,7 +161,7 @@ def run() -> None:
                     ),
                     MessageHandler(
                         Filters.text,
-                        handlers.wrong_format_name
+                        handlers.wrong_search_name
                     )
                 ],
             },

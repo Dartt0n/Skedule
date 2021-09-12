@@ -97,12 +97,6 @@ def announce_bot_update(updater: Updater):
                 parse_mode="markdown",
             )
             sleep(0.25)
-            updater.bot.send_message(
-                chat_id=telegram_id,
-                text=get_json("announcements.json")["data"][0],
-                parse_mode="markdown",
-            )
-            sleep(0.25)
         except:
             logger.critical(f"Даун детектет: {telegram_id}")
 
@@ -266,6 +260,9 @@ def wrong_format_name(update: Update, context: CallbackContext) -> State:
     )
     return State.NAME_ENTERED
 
+def wrong_search_name(update: Update, context: CallbackContext) -> State:
+    wrong_format_name(update, context)
+    return State.SEARCH_NAME_ENTERED
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
