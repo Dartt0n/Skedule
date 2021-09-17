@@ -266,6 +266,7 @@ def wrong_search_name(update: Update, context: CallbackContext) -> State:
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
+    name = name.replace("ё", "е")
     if name.count(" ") >= 2:
         # Surname. N. N.
         name = "{} {}{}".format(*name.split())
@@ -776,6 +777,7 @@ def find_teacher(update: Update, context: CallbackContext) -> State:
 
 def search_name_entered(update: Update, context: CallbackContext) -> State:
     name = update.message.text
+    name = name.replace("ё", "е")
     if name.count(" ") >= 2:
         # Surname. N. N.
         name = "{} {}{}".format(*name.split())
