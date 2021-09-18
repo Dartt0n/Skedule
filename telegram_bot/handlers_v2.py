@@ -98,7 +98,7 @@ def announce_bot_update(updater: Updater):
             )
             sleep(0.25)
         except:
-            logger.critical(f"Даун детектет: {telegram_id}")
+            logger.warning(f"Bot blocked by: {telegram_id}")
 
 
 def main_menu(update: Update, context, first_time=False) -> State:
