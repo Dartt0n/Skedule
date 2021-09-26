@@ -98,7 +98,7 @@ def announce_bot_update(updater: Updater):
             )
             sleep(0.25)
         except:
-            logger.critical(f"Даун детектет: {telegram_id}")
+            logger.warning(f"Bot blocked by: {telegram_id}")
 
 
 def main_menu(update: Update, context, first_time=False) -> State:
@@ -266,6 +266,7 @@ def wrong_search_name(update: Update, context: CallbackContext) -> State:
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
+    name = name.replace("ё", "е")
     if name.count(" ") >= 2:
         # Surname. N. N.
         name = "{} {}{}".format(*name.split())
@@ -776,6 +777,7 @@ def find_teacher(update: Update, context: CallbackContext) -> State:
 
 def search_name_entered(update: Update, context: CallbackContext) -> State:
     name = update.message.text
+    name = name.replace("ё", "е")
     if name.count(" ") >= 2:
         # Surname. N. N.
         name = "{} {}{}".format(*name.split())
