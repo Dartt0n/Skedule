@@ -41,7 +41,7 @@ def run() -> None:
     logger.info(f"Loading token: {TOKEN_INFO[profile]}")
     updater = Updater(properties[TOKEN_INFO[profile]].data)
 
-    #handlers.announce_bot_update(updater)
+    handlers.announce_bot_update(updater)
 
     updater.dispatcher.add_handler(
         ConversationHandler(
@@ -99,10 +99,7 @@ def run() -> None:
                         ),
                         handlers.confirm_teacher_name,
                     ),
-                    MessageHandler(
-                        Filters.text,
-                        handlers.wrong_format_name
-                    )
+                    MessageHandler(Filters.text, handlers.wrong_format_name),
                 ],
                 State.CONFIRM_NAME: [
                     CallbackQueryHandler(
@@ -159,10 +156,7 @@ def run() -> None:
                         ),
                         callback=handlers.search_name_entered,
                     ),
-                    MessageHandler(
-                        Filters.text,
-                        handlers.wrong_search_name
-                    )
+                    MessageHandler(Filters.text, handlers.wrong_search_name),
                 ],
             },
             fallbacks=[CommandHandler("start", handlers.start_command_handler)],
