@@ -104,3 +104,8 @@ class TelegramAgent:
         return list(
             map(lambda x: x.telegram_id, self.session.query(TelegramUser).all())
         )
+
+    def get_users(self) -> List:
+        return list(
+            map(lambda x: (x.telegram_id, x.is_student, x.subclass), self.session.query(TelegramUser).all())
+        )
