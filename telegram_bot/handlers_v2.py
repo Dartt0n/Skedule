@@ -62,7 +62,7 @@ MISC_MENU_SECOND_MARKUP = markup_from(
     [
         [("Объявления", CallbackEnum.ANNOUNCEMENTS)],
         [("Расписание столовой", CallbackEnum.CANTEEN)],
-        # [("Найстройки уведомлений", CallbackEnum.SETTINGS)]
+        # [("Настройки уведомлений", CallbackEnum.SETTINGS)]
         [("Изменить ФИО/класс", CallbackEnum.CHANGE_INFORMATION)],
         [("Вернуться в главное меню", CallbackEnum.MAIN_MENU)],
         [(" \u2B05 ", CallbackEnum.MISC_MENU_FIRST)],
@@ -87,19 +87,28 @@ def announce_bot_update(updater: Updater):
         "r",
     ) as f:
         text = f.read()
-    for telegram_id in DBTG.get_chats():
-        logger.info(f"Send announcement to {telegram_id}")
-        #
+    for telegram_id, is_student, subclass in DBTG.get_users():
+        if is_student == True and subclass[:2] == "11":
+            logger.info(f"Send announcement to {telegram_id} ({subclass})")
+            try:
+                updater.bot.send_message(
+                    chat_id=telegram_id,
+                    text=announcements[0],
+                    parse_mode="markdown",
+                )
+                sleep(0.1)
+            except:
+                logger.warning(f"Bot blocked by: {telegram_id}")
+        logger.info(f"Send update message to {telegram_id}")
         try:
             updater.bot.send_message(
                 chat_id=telegram_id,
                 text=text + get_text("restart_message"),
                 parse_mode="markdown",
             )
-            sleep(0.25)
+            sleep(0.1)
         except:
             logger.warning(f"Bot blocked by: {telegram_id}")
-
 
 def main_menu(update: Update, context, first_time=False) -> State:
     update_query(
