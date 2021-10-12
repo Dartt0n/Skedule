@@ -6,6 +6,7 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
+    BigInteger,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import sessionmaker
@@ -31,7 +32,7 @@ def load_profile():
 
 class TelegramUser(Base):
     __tablename__ = load_profile()
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(BigInteger, primary_key=True, nullable=False)
     telegram_id = Column(Integer, nullable=False)
     is_student = Column(Boolean, nullable=False)
     subclass = Column(String(length=15), nullable=True)
