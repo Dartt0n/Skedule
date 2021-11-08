@@ -88,27 +88,16 @@ def announce_bot_update(updater: Updater):
     ) as f:
         text = f.read()
     for telegram_id, is_student, subclass in DBTG.get_users():
-        if is_student == True and subclass[:2] == "11":
-            logger.info(f"Send announcement to {telegram_id} ({subclass})")
-            try:
-                updater.bot.send_message(
-                    chat_id=telegram_id,
-                    text=announcements[0],
-                    parse_mode="markdown",
-                )
-                sleep(0.1)
-            except:
-                logger.warning(f"Bot blocked by: {telegram_id}")
-        logger.info(f"Send update message to {telegram_id}")
         try:
             updater.bot.send_message(
                 chat_id=telegram_id,
-                text=text + get_text("restart_message"),
+                text=text,  # ,get_text("restart_message"),
                 parse_mode="markdown",
             )
             sleep(0.1)
         except:
             logger.warning(f"Bot blocked by: {telegram_id}")
+
 
 def main_menu(update: Update, context, first_time=False) -> State:
     update_query(
@@ -269,9 +258,11 @@ def wrong_format_name(update: Update, context: CallbackContext) -> State:
     )
     return State.NAME_ENTERED
 
+
 def wrong_search_name(update: Update, context: CallbackContext) -> State:
     wrong_format_name(update, context)
     return State.SEARCH_NAME_ENTERED
+
 
 def confirm_teacher_name(update: Update, context: CallbackContext) -> State:
     name = update.message.text
