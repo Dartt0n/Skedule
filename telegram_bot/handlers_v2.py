@@ -93,6 +93,21 @@ def announce_bot_update(updater: Updater):
                 chat_id=telegram_id,
                 text=text,  # ,get_text("restart_message"),
                 parse_mode="markdown",
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # sudo chown root:docker /var/run/docker.sock
+                # # Backup
+                # docker exec CONTAINER /usr/bin/mysqldump -u root --password=root DATABASE > backup.sql
+                # Restore
+                # cat backup.sql | docker exec -i CONTAINER /usr/bin/mysql -u root --password=root DATABASE
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                # # TODO: ! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                 disable_notification=True,
             )
             sleep(0.1)
