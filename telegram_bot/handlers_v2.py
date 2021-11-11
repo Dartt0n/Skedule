@@ -93,6 +93,7 @@ def announce_bot_update(updater: Updater):
                 chat_id=telegram_id,
                 text=text,  # ,get_text("restart_message"),
                 parse_mode="markdown",
+                disable_notification=True,
             )
             sleep(0.1)
         except:
